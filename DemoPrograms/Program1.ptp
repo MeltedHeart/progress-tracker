@@ -1,0 +1,17 @@
+[ProgramInfo]
+ProgramName=Program1
+Creator=BlakCake
+CreatorVersion=ProgressTracker
+ProgramDescription=A simple test
+Projects=ProjectExample1|Project2
+[Program1]
+ProjectTitle=Program1
+ProjectDescription=A simple test program
+[ProjectExample1]
+ProjectTitle=Project1
+ProjectDescription=A simple test project. Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...
+ProgressTracker=69
+[Project2]
+ProjectTitle=Project2
+ProjectDescription=A simple test project 2: Electric Boogalo
+ProgressTracker=49

@@ -1,0 +1,17 @@
+[ProgramInfo]
+ProgramName=ProgramTester
+Creator=BlakCake
+CreatorVersion=ProgressTracker
+ProgramDescription=A simple test
+Projects=ProjectTester1|ProjectTester2
+[ProgramTester]
+ProjectTitle=Program1
+ProjectDescription=Noobmaster, hey its Thor again. You know, the god of thunder? Listen buddy, if you dont log off this game immediately I will fly over to your house
+[ProjectTester1]
+ProjectTitle=ProjectTester1
+ProjectDescription=Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...
+ProgressTracker=69
+[ProjectTester2]
+ProjectTitle=ProjectTester2
+ProjectDescription=What the fuck did you just fucking say about me, you little bitch? I'll have you know I graduated top of my class in the Navy Seals
+ProgressTracker=49
