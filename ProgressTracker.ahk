@@ -50,11 +50,14 @@ Menu, MainMenuBar, Add, &Help, :HelpMenu
 
 Gui, Menu, MainMenuBar
 
-Gui, Add, TreeView, gMainTreeView w230 r16
-Gui, Add, GroupBox, w230 h150, Item Description
-Gui, Add, Text,vMainDescriptionText w220 h125 x22 y330, Click on an item to view more
+Gui, Add, TreeView, gMainTreeView w240 r16
+Gui, Add, Tab3, vDescriptionBox x13 w240 h200, Description|Properties
+Gui, Add, Text,vMainDescriptionText w225 h125 x22 y337, Click on an item to view more
+Gui, Tab
+Gui, Add, Tab3, vTaskBox x265 y8 w550 h500, Tasks|Notes|Reminders
+Gui, Tab
+;Gui, Add, Button,x13 Default, BOI
 ;Gui, Add, ListBox, r10 vProjectSelect, %ProjectList%
-;Gui, Add, Button, Default, BOI
 
 Gui, Show
 Goto LoadSaveFile
@@ -111,7 +114,7 @@ MenuSettings:
 return
 
 MenuAbout:
-MsgBox, %Codename%
+MsgBox, %Codename%`nhttps://github.com/MeltedHeart/progress-tracker
 return
 
 MainTreeView:
