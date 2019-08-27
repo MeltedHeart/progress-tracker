@@ -20,7 +20,8 @@ else
 }
 
 CreateSettingsIni:
-MsgBox, No INI
+IniWrite, %CurrentSaveFile%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
+Goto ReadSettingsIni
 return
 
 ReadSettingsIni:
