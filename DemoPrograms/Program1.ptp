@@ -10,8 +10,17 @@ ProjectDescription=A simple test program
 [ProjectExample1]
 ProjectTitle=Project1
 ProjectDescription=A simple test project. Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...
-ProgressTracker=69
+Tasks=Task1
+Task1=Lorem Impsum
+TaskDescription1=A simple description. Neque porro quisquam est qui dolorem ipsum quia dolor sit amet.
+ProgressTracker1=69
 [Project2]
 ProjectTitle=Project2
 ProjectDescription=A simple test project 2: Electric Boogalo
-ProgressTracker=49
+Tasks=Task1|Task2
+Task1=Impsum Lorem
+TaskDescription1=A simple description. Neque porro quisquam est qui dolorem ipsum quia dolor sit amet.
+ProgressTracker1=49
+Task2=Its just a test dude
+TaskDescription2=Read the title of this task
+ProgressTracker2=49
