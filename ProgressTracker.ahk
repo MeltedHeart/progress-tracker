@@ -37,6 +37,8 @@ Menu, FileMenu, Add, &Open Program`tCtrl+O, MenuFileOpen
 Menu, FileMenu, Add, &Save Program`tCtrl+S, MenuFileSave
 Menu, FileMenu, Add, Save Program As, MenuFileSaveAs
 Menu, FileMenu, Add
+Menu, FileMenu, Add, Settings, MenuSettings
+Menu, FileMenu, Add
 Menu, FileMenu, Add, E&xit, GuiClose
 
 Menu, HelpMenu, Add, About, MenuAbout
@@ -77,13 +79,12 @@ else
 	FileSelectFile, ProgramSave,,%A_MyDocuments%,Select a Program, *.ptp
 	CurrentSaveFile=%ProgramSave%	
 	Goto LoadSaveFile
-	EnableAllGui()
-	EnableAllMenus()
 	return
 }
 
 LoadSaveFile:
 TV_Delete()
+IniWrite, %CurrentSaveFile%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 IniRead, ProgramDescription, %CurrentSaveFile%, ProgramInfo, ProgramDescription
 IniRead, ProjectList, %CurrentSaveFile%, ProgramInfo, Projects
@@ -103,6 +104,9 @@ Gui, Submit, NoHide
 FileSelectFile, ProgramSave,,%A_MyDocuments%,Select where to save this program, *.ptp
 EnableAllGui()
 EnableAllMenus()
+return
+
+MenuSettings:
 return
 
 MenuAbout:
