@@ -93,6 +93,7 @@ IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 IniRead, ProgramDescription, %CurrentSaveFile%, ProgramInfo, ProgramDescription
 IniRead, ProjectList, %CurrentSaveFile%, ProgramInfo, Projects
 TreeViewLoader(SavedProgramName,ProjectList)
+GuiControl,,MainDescriptionText, Click on an item to view more
 EnableAllGui()
 EnableAllMenus()
 return
