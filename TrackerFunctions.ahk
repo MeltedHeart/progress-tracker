@@ -8,10 +8,6 @@ BoiBox()
 DisableAllGui()
 {
 	WinGet, ActiveControlList, ControlList, A
-	;MsgBox, %ActiveControlList%
-	;StringSplit, ActiveControls, ActiveControlList, `n
-	;MsgBox, %ActiveControls1%
-	;MsgBox, %ActiveControls2%
 	Loop, Parse, ActiveControlList, `n
 	{
 		GuiControl, Disable, %A_LoopField%
@@ -39,15 +35,28 @@ EnableAllMenus()
 	Menu, MainMenuBar, Enable, &Help
 }
 
-TreeViewLoader(ParentProgram,ProjectChildren)
+TreeViewLoader(ParentProgram,ProjectChildren,SaveFile)
 {
+	Global
 	P1 := TV_Add(ParentProgram)
+	LastMainTaskLoop=1
 	Loop, Parse, ProjectChildren, `|
 	{
-		;TreeViewParent=P1
-		;TreeViewChildren=C%A_Index%
-		P1C1 := TV_Add(A_LoopField,P1)
+		P1C%A_Index% := TV_Add(A_LoopField,P1)
+		IniRead, TVLTaskList, %CurrentSaveFile%, %A_LoopField%, Tasks
+		Loop, Parse, TVLTaskList, `|
+		{
+			P1C1C1 := TV_Add(A_LoopField,P1C%LastMainTaskLoop%)
+		}
+		LastMainTaskLoop+=1
 	}
 	TV_Modify(P1, "Expand")
 }
 
+TaskLoader(AllTasks,SaveFile)
+{
+	;Loop, Parse, TaskList, `|
+	;{
+	;	P1C
+	;}
+}

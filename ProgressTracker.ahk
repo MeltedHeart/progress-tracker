@@ -1,8 +1,9 @@
 ; /// Progress Tracker ///
 Codename=ProgressTracker
+CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-; #Warn  ; Enable warnings to assist with detecting common errors.
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+;#Warn  ; Enable warnings to assist with detecting common errors.
+;SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #SingleInstance,Force
 #Include TrackerFunctions.ahk
@@ -10,7 +11,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 FileCreateDir, %A_MyDocuments%\ProgressTracker
 FileCreateDir, %A_MyDocuments%\ProgressTracker\DemoPrograms
 
-ifNotExist, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini
+ifNotExist, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini ;Verifies if the settings file exists
 {
 	Goto CreateSettingsIni
 }
@@ -19,18 +20,17 @@ else
 	Goto ReadSettingsIni
 }
 
-CreateSettingsIni:
+CreateSettingsIni: ;Creates the settings file
 IniWrite, %CurrentSaveFile%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 Goto ReadSettingsIni
 return
 
-ReadSettingsIni:
-;MsgBox, Reading INI
+ReadSettingsIni: ;Reads the settings file
 IniRead, LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 
-CurrentSaveFile=%LastOpenProgram%
+CurrentSaveFile=%LastOpenProgram% ; Set the Current Save File as the last opened one
 
-Gui, ProgressMainScreen:New, HwndProgressMainScreen
+Gui, ProgressMainScreen:New, HwndProgressMainScreen,Progress Tracker
 Gui, Font, s11
 
 Menu, FileMenu, Add, &New Program`tCtrl+N, MenuFileNew
@@ -42,22 +42,29 @@ Menu, FileMenu, Add, Settings, MenuSettings
 Menu, FileMenu, Add
 Menu, FileMenu, Add, E&xit, GuiClose
 
+Menu, NotesMenu, Add, Create a note, CreateNote
+Menu, NotesMenu, Add, Open a note, OpenNoteMenu
+
+Menu, RemindersMenu, Add, Create a Reminder, CreateReminder
+Menu, RemindersMenu, Add, View Reminders, OpenReminderMenu
+
 Menu, HelpMenu, Add, About, MenuAbout
 
 Menu, MainMenuBar, Add, &File, :FileMenu
-;Menu, MainMenuBar, Add, Edit 
+Menu, MainMenuBar, Add, &Notes, :NotesMenu
+Menu, MainMenuBar, Add, &Reminders, :RemindersMenu
 Menu, MainMenuBar, Add, &Help, :HelpMenu
 
 Gui, Menu, MainMenuBar
 
-Gui, Add, TreeView, gMainTreeView w240 r16
+Gui, Add, TreeView, gMainTreeView AltSubmit w240 r16
 Gui, Add, Tab3, vDescriptionBox x13 w240 h200, Description|Properties
 Gui, Add, Text,vMainDescriptionText w225 h125 x22 y337, Click on an item to view more
+Gui, Tab, 2
+Gui, Add, Text,vMainPropertiesText w225 h125 x22 y337, Click on an item to view more
 Gui, Tab
-Gui, Add, Tab3, vTaskBox x265 y8 w550 h500, Tasks|Notes|Reminders
+Gui, Add, Tab3,+hide vTaskBox x265 y8 w550 h500, Tasks
 Gui, Tab
-;Gui, Add, Button,x13 Default, BOI
-;Gui, Add, ListBox, r10 vProjectSelect, %ProjectList%
 
 Gui, Show
 Goto LoadSaveFile
@@ -92,8 +99,11 @@ IniWrite, %CurrentSaveFile%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSett
 IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 IniRead, ProgramDescription, %CurrentSaveFile%, ProgramInfo, ProgramDescription
 IniRead, ProjectList, %CurrentSaveFile%, ProgramInfo, Projects
-TreeViewLoader(SavedProgramName,ProjectList)
-GuiControl,,MainDescriptionText, Click on an item to view more
+;IniRead, TaskList, %CurrentSaveFile%, %TVItemName%, Tasks
+TreeViewLoader(SavedProgramName,ProjectList,CurrentSaveFile)
+Sleep 10
+GuiControl,,MainDescriptionText, Double Click on an item to view more
+GuiControl,,MainPropertiesText, Double Click on an item to view more
 EnableAllGui()
 EnableAllMenus()
 return
@@ -114,15 +124,67 @@ return
 MenuSettings:
 return
 
+CreateNote:
+return
+
+OpenNoteMenu:
+return
+
+CreateReminder:
+return
+
+OpenReminderMenu:
+return
+
 MenuAbout:
 MsgBox, %Codename%`nhttps://github.com/MeltedHeart/progress-tracker
 return
 
 MainTreeView:
+If A_GuiEvent = RightClick
+{
+	if A_EventInfo = 0
+	{
+		Menu , ContextNewMenu , Add , New Project , NewProjectMenu
+		Menu , ContextNewMenu , Show
+	}
+	else
+	{
+		Menu , ContextEditMenu , Add , Change Name , ChangeProjectName
+		Menu , ContextEditMenu , Add , Change Description , ChangeProjectDescription
+		Menu , ContextEditMenu , Add , Delete , DeleteProject
+		Menu , ContextEditMenu , Show
+	}
+	return
+}
+Gui, Submit, NoHide
 SelectedTVItemID := TV_GetSelection()
 TV_GetText(TVItemName,SelectedTVItemID)
-IniRead, SelectedProjectDescription, %CurrentSaveFile%, %TVItemName%, ProjectDescription
-GuiControl,,MainDescriptionText, %SelectedProjectDescription%
+if TVItemName=""
+{
+	return
+}
+else
+{
+	IniRead, SelectedProjectDescription, %CurrentSaveFile%, %TVItemName%, ProjectDescription
+	IniRead, SelectedProjectTitle, %CurrentSaveFile%, %TVItemName%, ProjectTitle
+	;IniRead, SelectedProjectCreator, %CurrentSaveFile%, %TVItemName%, ProjectCreator //Placeholder for collaboration in the future
+	IniRead, SelectedProjectDate, %CurrentSaveFile%, %TVItemName%, Date
+	IniRead, SelectedProjectLastChange, %CurrentSaveFile%, %TVItemName%, LastChange
+	GuiControl,,MainDescriptionText, %SelectedProjectDescription%
+	GuiControl,,MainPropertiesText, Title: %SelectedProjectTitle%`nCreator: %CurrentUser%`nDate: %SelectedProjectDate%`nLast Change: %SelectedProjectLastChange%
+	IniRead, TaskList, %CurrentSaveFile%, %TVItemName%, Tasks
+	;TaskLoader(TaskList,CurrentSaveFile)
+}
+return
+
+ChangeProjectDescription:
+return
+ChangeProjectName:
+return
+DeleteProject:
+return
+NewProjectMenu:
 return
 
 GuiClose:
