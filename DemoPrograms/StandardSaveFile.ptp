@@ -6,9 +6,15 @@ ProgramDescription=
 Projects=
 [ProgramName]
 ProjectTitle=
+Creator=
+Date=
+LastChange=
 ProjectDescription=
 [ProjectName1]
 ProjectTitle=
+Creator=
+Date=
+LastChange=
 ProjectDescription=
 ProjectNotes=
 ProjectReminder=
@@ -18,6 +24,9 @@ TaskDescription1=
 ProgressTracker1=25
 [ProjectName2]
 ProjectTitle=
+Creator=
+Date=
+LastChange=
 ProjectDescription=
 ProjectNotes=
 ProjectReminder=
