@@ -59,9 +59,9 @@ Gui, Menu, MainMenuBar
 
 Gui, Add, TreeView, gMainTreeView AltSubmit w240 r16
 Gui, Add, Tab3, vDescriptionBox x13 w240 h200, Description|Properties
-Gui, Add, Text,vMainDescriptionText w225 h125 x22 y337, Click on an item to view more
+Gui, Add, Text,vMainDescriptionText w220 h125 , Click on an item to view more
 Gui, Tab, 2
-Gui, Add, Text,vMainPropertiesText w225 h125 x22 y337, Click on an item to view more
+Gui, Add, Text,vMainPropertiesText w220 h125 , Click on an item to view more
 Gui, Tab
 Gui, Add, Tab3,+hide vTaskBox x265 y8 w550 h500, Info
 Gui, Add, GroupBox, w520 h100, Current Progress
