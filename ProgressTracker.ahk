@@ -63,7 +63,10 @@ Gui, Add, Text,vMainDescriptionText w225 h125 x22 y337, Click on an item to view
 Gui, Tab, 2
 Gui, Add, Text,vMainPropertiesText w225 h125 x22 y337, Click on an item to view more
 Gui, Tab
-Gui, Add, Tab3,+hide vTaskBox x265 y8 w550 h500, Tasks
+Gui, Add, Tab3,+hide vTaskBox x265 y8 w550 h500, Info
+Gui, Add, GroupBox, w520 h100, Current Progress
+Gui, Add, GroupBox, w520 h200, Updates
+Gui, Add, GroupBox, w520 h140, Notes and Reminders
 Gui, Tab
 
 Gui, Show
@@ -101,7 +104,7 @@ IniRead, ProgramDescription, %CurrentSaveFile%, ProgramInfo, ProgramDescription
 IniRead, ProjectList, %CurrentSaveFile%, ProgramInfo, Projects
 ;IniRead, TaskList, %CurrentSaveFile%, %TVItemName%, Tasks
 TreeViewLoader(SavedProgramName,ProjectList,CurrentSaveFile)
-Sleep 10
+Sleep 50
 GuiControl,,MainDescriptionText, Double Click on an item to view more
 GuiControl,,MainPropertiesText, Double Click on an item to view more
 EnableAllGui()
@@ -145,15 +148,23 @@ If A_GuiEvent = RightClick
 {
 	if A_EventInfo = 0
 	{
-		Menu , ContextNewMenu , Add , New Project , NewProjectMenu
-		Menu , ContextNewMenu , Show
+		Menu , ContextNewProjectMenu , Add , New Project , NewProjectMenu
+		Menu , ContextNewProjectMenu , Show
+	}
+	if TV_Get(A_EventInfo, "Bold")
+	{
+		Menu, ContextEditProjectMenu, Add, New Task, NewTaskMenu
+		Menu, ContextEditProjectMenu, Add, Change Name , ChangeProjectName
+		Menu, ContextEditProjectMenu, Add, Change Description , ChangeProjectDescription
+		Menu, ContextEditProjectMenu, Add, Delete , DeleteProject
+		Menu, ContextEditProjectMenu ,Show
 	}
 	else
 	{
-		Menu , ContextEditMenu , Add , Change Name , ChangeProjectName
-		Menu , ContextEditMenu , Add , Change Description , ChangeProjectDescription
-		Menu , ContextEditMenu , Add , Delete , DeleteProject
-		Menu , ContextEditMenu , Show
+		Menu , ContextEditTaskMenu , Add , Change Name , ChangeProjectName
+		Menu , ContextEditTaskMenu , Add , Change Description , ChangeProjectDescription
+		Menu , ContextEditTaskMenu , Add , Delete , DeleteProject
+		Menu , ContextEditTaskMenu , Show
 	}
 	return
 }
@@ -171,13 +182,20 @@ else
 	;IniRead, SelectedProjectCreator, %CurrentSaveFile%, %TVItemName%, ProjectCreator //Placeholder for collaboration in the future
 	IniRead, SelectedProjectDate, %CurrentSaveFile%, %TVItemName%, Date
 	IniRead, SelectedProjectLastChange, %CurrentSaveFile%, %TVItemName%, LastChange
+	if SelectedProjectDescription=ERROR
+	{
+		return
+	}
+	else
 	GuiControl,,MainDescriptionText, %SelectedProjectDescription%
 	GuiControl,,MainPropertiesText, Title: %SelectedProjectTitle%`nCreator: %CurrentUser%`nDate: %SelectedProjectDate%`nLast Change: %SelectedProjectLastChange%
 	IniRead, TaskList, %CurrentSaveFile%, %TVItemName%, Tasks
-	;TaskLoader(TaskList,CurrentSaveFile)
+	TaskLoader(TaskList,CurrentSaveFile)
 }
 return
 
+NewTaskMenu:
+return
 ChangeProjectDescription:
 return
 ChangeProjectName:

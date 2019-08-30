@@ -42,21 +42,19 @@ TreeViewLoader(ParentProgram,ProjectChildren,SaveFile)
 	LastMainTaskLoop=1
 	Loop, Parse, ProjectChildren, `|
 	{
-		P1C%A_Index% := TV_Add(A_LoopField,P1)
+		P1C%A_Index% := TV_Add(A_LoopField,P1,"Bold")
 		IniRead, TVLTaskList, %CurrentSaveFile%, %A_LoopField%, Tasks
 		Loop, Parse, TVLTaskList, `|
 		{
 			P1C1C1 := TV_Add(A_LoopField,P1C%LastMainTaskLoop%)
 		}
 		LastMainTaskLoop+=1
+		TV_Modify(P1C%A_Index%, "Expand")
 	}
 	TV_Modify(P1, "Expand")
 }
 
 TaskLoader(AllTasks,SaveFile)
 {
-	;Loop, Parse, TaskList, `|
-	;{
-	;	P1C
-	;}
+	return
 }
