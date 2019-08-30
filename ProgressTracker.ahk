@@ -1,6 +1,7 @@
-; /// Progress Tracker ///
+﻿; /// Progress Tracker ///
 Codename=ProgressTracker
 CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
+Temp_File=0 ; 
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ;#Warn  ; Enable warnings to assist with detecting common errors.
 ;SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -10,6 +11,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 FileCreateDir, %A_MyDocuments%\ProgressTracker
 FileCreateDir, %A_MyDocuments%\ProgressTracker\DemoPrograms
+FileCreateDir, %A_temp%\ProgressTracker
 
 ifNotExist, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini ;Verifies if the settings file exists
 {
@@ -74,6 +76,14 @@ Goto LoadSaveFile
 return
 
 MenuFileNew:
+MsgBox,52,Confirm,  Your previous changes won�t be saved `, Are you sure?
+IfMsgBox Yes
+{
+	CreateTempFile(%A_temp%\ProgressTracker\New_File.ptp)
+	CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
+	Temp_File=1
+	Goto LoadSaveFile
+}
 return
 
 MenuFileOpen:

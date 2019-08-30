@@ -58,3 +58,18 @@ TaskLoader(AllTasks,SaveFile)
 {
 	return
 }
+
+CreateTempFile(WhereToSave)
+{
+	FormatTime, Localtiem, ,ShortDate
+	IniWrite,,WhereToSave,ProgramInfo,ProgramName
+	IniWrite,,WhereToSave,ProgramInfo,Creator
+	IniWrite,,WhereToSave,ProgramInfo,CreatorVersion
+	IniWrite,,WhereToSave,ProgramInfo,CreatorDescription
+	IniWrite,,WhereToSave,ProgramInfo,Projects
+	IniWrite,,WhereToSave,ProgramName,ProjectTitle
+	IniWrite,,WhereToSave,ProgramName,Creator
+	IniWrite,Localtiem,WhereToSave,ProgramName,Date
+	IniWrite,,WhereToSave,ProgramName,LastChange
+	IniWrite,,WhereToSave,ProgramName,ProjectDescription
+}
