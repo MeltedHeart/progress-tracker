@@ -65,6 +65,7 @@ Gui, Add, Text,vMainPropertiesText w220 h125 , Click on an item to view more
 Gui, Tab
 Gui, Add, Tab3,+hide vTaskBox x265 y8 w550 h500, Info
 Gui, Add, GroupBox, w520 h100, Current Progress
+Gui, Add, Progress, vProgressBar x50 w490 h30 , 55
 Gui, Add, GroupBox, w520 h200, Updates
 Gui, Add, GroupBox, w520 h140, Notes and Reminders
 Gui, Tab
@@ -150,6 +151,7 @@ If A_GuiEvent = RightClick
 	{
 		Menu , ContextNewProjectMenu , Add , New Project , NewProjectMenu
 		Menu , ContextNewProjectMenu , Show
+		return
 	}
 	if TV_Get(A_EventInfo, "Bold")
 	{
@@ -158,6 +160,7 @@ If A_GuiEvent = RightClick
 		Menu, ContextEditProjectMenu, Add, Change Description , ChangeProjectDescription
 		Menu, ContextEditProjectMenu, Add, Delete , DeleteProject
 		Menu, ContextEditProjectMenu ,Show
+		return
 	}
 	else
 	{
