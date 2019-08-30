@@ -29,7 +29,7 @@ ReadSettingsIni: ;Reads the settings file
 IniRead, LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 
 CurrentSaveFile=%LastOpenProgram% ; Set the Current Save File as the last opened one
-
+; Creating the GUI
 Gui, ProgressMainScreen:New, HwndProgressMainScreen,Progress Tracker
 Gui, Font, s11
 
@@ -65,13 +65,13 @@ Gui, Add, Text,vMainPropertiesText w220 h125 , Click on an item to view more
 Gui, Tab
 Gui, Add, Tab3,+hide vTaskBox x265 y8 w550 h500, Info
 Gui, Add, GroupBox, w520 h100, Current Progress
-Gui, Add, Progress, vProgressBar x50 w490 h30 , 55
 Gui, Add, GroupBox, w520 h200, Updates
 Gui, Add, GroupBox, w520 h140, Notes and Reminders
+Gui, Add, Progress, vProgressBar x300 y70 w480 h50, 1
 Gui, Tab
 
 Gui, Show
-Goto LoadSaveFile
+Goto LoadSaveFile ;Goes to LoadSaveFile so it has a file already open when the program starts
 return
 
 MenuFileNew:
@@ -185,6 +185,18 @@ else
 	;IniRead, SelectedProjectCreator, %CurrentSaveFile%, %TVItemName%, ProjectCreator //Placeholder for collaboration in the future
 	IniRead, SelectedProjectDate, %CurrentSaveFile%, %TVItemName%, Date
 	IniRead, SelectedProjectLastChange, %CurrentSaveFile%, %TVItemName%, LastChange
+	if ! TV_Get(A_EventInfo, "Bold")
+	{
+		TVItemID := TV_GetSelection()
+		TaskParent := TV_GetParent(TVItemID)
+		TV_GetText(TVItemTaskName,TaskParent)
+		IniRead, TaskList, %CurrentSaveFile%, %TVItemTaskName%, Tasks
+		TaskLoader(TVItemName,TVItemTaskName,TaskList,CurrentSaveFile)
+	}
+	;if TV_Get(A_EventInfo, "Bold")
+	;{
+	;	Placeholder to fix reading overall progress from projects
+	;}
 	if SelectedProjectDescription=ERROR
 	{
 		return
@@ -192,8 +204,6 @@ else
 	else
 	GuiControl,,MainDescriptionText, %SelectedProjectDescription%
 	GuiControl,,MainPropertiesText, Title: %SelectedProjectTitle%`nCreator: %CurrentUser%`nDate: %SelectedProjectDate%`nLast Change: %SelectedProjectLastChange%
-	IniRead, TaskList, %CurrentSaveFile%, %TVItemName%, Tasks
-	TaskLoader(TaskList,CurrentSaveFile)
 }
 return
 

@@ -54,7 +54,23 @@ TreeViewLoader(ParentProgram,ProjectChildren,SaveFile)
 	TV_Modify(P1, "Expand")
 }
 
-TaskLoader(AllTasks,SaveFile)
+TaskLoader(Selected,ParentName,TaskList,SaveFile)
 {
+	global
+	Loop, Parse, TaskList, `|
+	{
+		if A_LoopField = %Selected%
+		{
+			IniRead, ProgressBarPercent, %SaveFile%, %ParentName%, ProgressTracker%A_Index%
+			GuiControl,,ProgressBar, %ProgressBarPercent%
+			IniRead, SelectedTaskDescription, %SaveFile%, %ParentName%, TaskDescription%A_Index%
+			GuiControl,,MainDescriptionText, %SelectedTaskDescription%
+			IniRead, SelectedTaskTitle, %SaveFile%, %ParentName%, Task%A_Index%
+			;IniRead, SelectedProjectCreator, %CurrentSaveFile%, %TVItemName%, ProjectCreator //Placeholder for collaboration in the future
+			IniRead, SelectedTaskDate, %SaveFile%, %ParentName%, Date
+			IniRead, SelectedTaskLastChange, %SaveFile%, %ParentName%, LastChange
+			GuiControl,,MainPropertiesText, Title: %SelectedTaskTitle%`nCreator: %CurrentUser%`nDate: %SelectedTaskDate%`nLast Change: %SelectedTaskLastChange%
+		}
+	}
 	return
 }
