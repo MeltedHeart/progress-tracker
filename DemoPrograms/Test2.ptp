@@ -18,8 +18,9 @@ LastChange=8/28/2019
 ProjectDescription=Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...
 ProjectNotes=NoteNote
 ProjectReminder=
-Tasks=Task1
+Tasks=Melomelo
 Task1=Lorem Impsum
+TaskDescription1=Neque porro quisquam est qui dolorem ipsum quia dolor sit amet
 ProgressTracker1=69
 [ProjectTester2]
 ProjectTitle=ProjectTester2
@@ -31,4 +32,5 @@ ProjectNotes=NoteNote
 ProjectReminder=
 Tasks=Task1
 Task1=Lorem Impsum
+TaskDescription1=Gorilla warfare coypasta
 ProgressTracker1=49
