@@ -23,13 +23,14 @@ else
 }
 
 CreateSettingsIni: ;Creates the settings file
-IniWrite, %CurrentSaveFile%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
+CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
+CreateTempFile(CurrentSaveFile)
+IniWrite, %A_temp%\ProgressTracker\New_File.ptp, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 Goto ReadSettingsIni
 return
 
 ReadSettingsIni: ;Reads the settings file
 IniRead, LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
-
 CurrentSaveFile=%LastOpenProgram% ; Set the Current Save File as the last opened one
 
 Gui, ProgressMainScreen:New, HwndProgressMainScreen,Progress Tracker
@@ -76,15 +77,27 @@ Goto LoadSaveFile
 return
 
 MenuFileNew:
-MsgBox,52,Confirm,  Your previous changes won�t be saved `, Are you sure?
-IfMsgBox Yes
-{
-	CreateTempFile(%A_temp%\ProgressTracker\New_File.ptp)
-	CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
-	Temp_File=1
-	Goto LoadSaveFile
-}
-return
+IniRead,LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
+
+;If ! CurrentSaveFile="" 
+;{
+	MsgBox,52,Confirm,  Your previous changes won�t be saved `, Are you sure?
+	IfMsgBox Yes
+	{
+		CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
+		CreateTempFile(CurrentSaveFile)
+		Temp_File=1
+		Goto LoadSaveFile
+	}
+	return
+;}
+;else
+;{
+;	CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
+;	CreateTempFile(CurrentSaveFile)
+;	Temp_File=1
+;	Goto LoadSaveFile
+;}
 
 MenuFileOpen:
 DisableAllGui()

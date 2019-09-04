@@ -61,15 +61,7 @@ TaskLoader(AllTasks,SaveFile)
 
 CreateTempFile(WhereToSave)
 {
+	FileDelete,  %A_temp%\ProgressTracker\New_File.ptp
 	FormatTime, Localtiem, ,ShortDate
-	IniWrite,,WhereToSave,ProgramInfo,ProgramName
-	IniWrite,,WhereToSave,ProgramInfo,Creator
-	IniWrite,,WhereToSave,ProgramInfo,CreatorVersion
-	IniWrite,,WhereToSave,ProgramInfo,CreatorDescription
-	IniWrite,,WhereToSave,ProgramInfo,Projects
-	IniWrite,,WhereToSave,ProgramName,ProjectTitle
-	IniWrite,,WhereToSave,ProgramName,Creator
-	IniWrite,Localtiem,WhereToSave,ProgramName,Date
-	IniWrite,,WhereToSave,ProgramName,LastChange
-	IniWrite,,WhereToSave,ProgramName,ProjectDescription
-}
+	FileAppend ,[ProgramInfo]`nProgramName=Pene`nCreator=`nCreatorVersion=`nProjects=`n[Program1]`nCreator=`nDate=%Localtiem%`nLastChange=`nProjectDescription=,%A_temp%\ProgressTracker\New_File.ptp
+}	
