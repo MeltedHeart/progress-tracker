@@ -121,8 +121,8 @@ IfMsgBox No
 }
 else
 {
-	DisableAllGui()
-	DisableAllMenus()
+	EnableAllGui()
+	EnableAllMenus()
 	FileSelectFile, ProgramSave,,%A_MyDocuments%,Select a Program, *.ptp
 	CurrentSaveFile=%ProgramSave%	
 	Goto LoadSaveFile
