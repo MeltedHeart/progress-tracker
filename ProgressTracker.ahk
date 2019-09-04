@@ -1,6 +1,7 @@
-; /// Progress Tracker ///
+﻿; /// Progress Tracker ///
 Codename=ProgressTracker
 CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
+Temp_File=0 ; 
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ;#Warn  ; Enable warnings to assist with detecting common errors.
 ;SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -10,6 +11,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 FileCreateDir, %A_MyDocuments%\ProgressTracker
 FileCreateDir, %A_MyDocuments%\ProgressTracker\DemoPrograms
+FileCreateDir, %A_temp%\ProgressTracker
 
 ifNotExist, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini ;Verifies if the settings file exists
 {
@@ -21,13 +23,14 @@ else
 }
 
 CreateSettingsIni: ;Creates the settings file
-IniWrite, %CurrentSaveFile%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
+CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
+CreateTempFile(CurrentSaveFile)
+IniWrite, %A_temp%\ProgressTracker\New_File.ptp, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 Goto ReadSettingsIni
 return
 
 ReadSettingsIni: ;Reads the settings file
 IniRead, LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
-
 CurrentSaveFile=%LastOpenProgram% ; Set the Current Save File as the last opened one
 ; Creating the GUI
 Gui, ProgressMainScreen:New, HwndProgressMainScreen,Progress Tracker
@@ -84,7 +87,27 @@ Goto LoadSaveFile ;Goes to LoadSaveFile so it has a file already open when the p
 return
 
 MenuFileNew:
-return
+IniRead,LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
+
+;If ! CurrentSaveFile="" 
+;{
+	MsgBox,52,Confirm,  Your previous changes won�t be saved `, Are you sure?
+	IfMsgBox Yes
+	{
+		CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
+		CreateTempFile(CurrentSaveFile)
+		Temp_File=1
+		Goto LoadSaveFile
+	}
+	return
+;}
+;else
+;{
+;	CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
+;	CreateTempFile(CurrentSaveFile)
+;	Temp_File=1
+;	Goto LoadSaveFile
+;}
 
 MenuFileOpen:
 DisableAllGui()

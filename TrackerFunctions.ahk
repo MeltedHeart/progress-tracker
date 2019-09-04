@@ -90,3 +90,10 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 	}
 	return
 }
+
+CreateTempFile(WhereToSave)
+{
+	FileDelete,  %A_temp%\ProgressTracker\New_File.ptp
+	FormatTime, Localtiem, ,ShortDate
+	FileAppend ,[ProgramInfo]`nProgramName=Pene`nCreator=`nCreatorVersion=`nProjects=`n[Program1]`nCreator=`nDate=%Localtiem%`nLastChange=`nProjectDescription=,%A_temp%\ProgressTracker\New_File.ptp
+}	
