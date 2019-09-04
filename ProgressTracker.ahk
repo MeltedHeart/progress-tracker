@@ -57,17 +57,26 @@ Menu, MainMenuBar, Add, &Help, :HelpMenu
 
 Gui, Menu, MainMenuBar
 
-Gui, Add, TreeView, gMainTreeView AltSubmit w240 r16
+Gui, Add, TreeView, gMainTreeView AltSubmit w240 r20
 Gui, Add, Tab3, vDescriptionBox x13 w240 h200, Description|Properties
 Gui, Add, Text,vMainDescriptionText w220 h125 , Click on an item to view more
 Gui, Tab, 2
 Gui, Add, Text,vMainPropertiesText w220 h125 , Click on an item to view more
 Gui, Tab
-Gui, Add, Tab3,+hide vTaskBox x265 y8 w550 h500, Info
-Gui, Add, GroupBox, w520 h100, Current Progress
-Gui, Add, GroupBox, w520 h200, Updates
-Gui, Add, GroupBox, w520 h140, Notes and Reminders
-Gui, Add, Progress, vProgressBar x300 y70 w480 h50, 1
+Gui, Add, Tab3,+hide vTaskBox x265 y8 w600 h572, Info
+Gui, Add, GroupBox, w570 h100, Current Progress
+Gui, Add, GroupBox, w570 h258, Updates
+Gui, Add, GroupBox, w570 h155, Notes and Reminders
+Gui, Add, Progress, vProgressBar x300 y70 w530 h50, 1
+Gui, Add, ListView, vUpdateList x290 y170 w195 h225, Title|`%|Date
+Gui, Add, Edit, vUpdateTitle x500 y170 w335 h20, Update Title
+Gui, Add, Edit, vUpdateDescription x500 y200 w335 h160, Update Description
+Gui, Add, Text,x500 y370, Progress
+Gui, Add, Edit, vPercentEdit x560 y368 w50
+Gui, Add, UpDown, vProgressAddPercent Range1-100, 1 
+Gui, Add, Text,x612 y370, `%
+Gui, Add, Button,x690 y366 vTagsButton gTagsButton, Tags
+Gui, Add, Button,x740 y366 vSaveUpdate gSaveUpdate , Save Update
 Gui, Tab
 
 Gui, Show
@@ -127,16 +136,12 @@ return
 
 MenuSettings:
 return
-
 CreateNote:
 return
-
 OpenNoteMenu:
 return
-
 CreateReminder:
 return
-
 OpenReminderMenu:
 return
 
@@ -216,6 +221,10 @@ return
 DeleteProject:
 return
 NewProjectMenu:
+return
+TagsButton:
+return
+SaveUpdate:
 return
 
 GuiClose:

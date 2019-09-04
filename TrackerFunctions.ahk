@@ -21,6 +21,22 @@ EnableAllGui()
 	{
 		GuiControl, Enable, %A_LoopField%
 	}
+	GuiControl, Disable, UpdateTitle
+	GuiControl, Disable, UpdateDescription
+	GuiControl, Disable, UpdateList
+	GuiControl, Disable, TagsButton
+	GuiControl, Disable, SaveUpdate
+	GuiControl, Disable, PercentEdit
+}
+
+EnableUpdateGui()
+{
+	GuiControl, Enable, UpdateTitle
+	GuiControl, Enable, UpdateDescription
+	GuiControl, Enable, UpdateList
+	GuiControl, Enable, TagsButton
+	GuiControl, Enable, SaveUpdate
+	GuiControl, Enable, PercentEdit
 }
 
 DisableAllMenus()
