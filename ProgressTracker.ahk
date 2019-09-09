@@ -2,16 +2,18 @@
 Codename=ProgressTracker
 CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
 Temp_File=0 ; 
+NewProjectCount=0
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ;#Warn  ; Enable warnings to assist with detecting common errors.
-;SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #SingleInstance,Force
 #Include TrackerFunctions.ahk
 
 FileCreateDir, %A_MyDocuments%\ProgressTracker
 FileCreateDir, %A_MyDocuments%\ProgressTracker\DemoPrograms
-FileCreateDir, %A_temp%\ProgressTracker
+FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData
+FileCreateDir, %A_Temp%\ProgressTracker
 
 ifNotExist, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini ;Verifies if the settings file exists
 {
@@ -33,7 +35,7 @@ ReadSettingsIni: ;Reads the settings file
 IniRead, LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 CurrentSaveFile=%LastOpenProgram% ; Set the Current Save File as the last opened one
 ; Creating the GUI
-Gui, ProgressMainScreen:New, HwndProgressMainScreen,Progress Tracker
+Gui, New,, Progress Tracker
 Gui, Font, s11
 
 Menu, FileMenu, Add, &New Program`tCtrl+N, MenuFileNew
@@ -60,7 +62,7 @@ Menu, MainMenuBar, Add, &Help, :HelpMenu
 
 Gui, Menu, MainMenuBar
 
-Gui, Add, TreeView, gMainTreeView AltSubmit w240 r20
+Gui, Add, TreeView, gMainTreeView vMainTreeView AltSubmit w240 r20
 Gui, Add, Tab3, vDescriptionBox x13 w240 h200, Description|Properties
 Gui, Add, Text,vMainDescriptionText w220 h125 , Click on an item to view more
 Gui, Tab, 2
@@ -76,7 +78,7 @@ Gui, Add, Edit, vUpdateTitle x500 y170 w335 h20, Update Title
 Gui, Add, Edit, vUpdateDescription x500 y200 w335 h160, Update Description
 Gui, Add, Text,x500 y370, Progress
 Gui, Add, Edit, vPercentEdit x560 y368 w50
-Gui, Add, UpDown, vProgressAddPercent Range1-100, 1 
+Gui, Add, UpDown, vProgressAddPercent Range-100-100, 1 
 Gui, Add, Text,x612 y370, `%
 Gui, Add, Button,x690 y366 vTagsButton gTagsButton, Tags
 Gui, Add, Button,x740 y366 vSaveUpdate gSaveUpdate , Save Update
@@ -87,6 +89,7 @@ Goto LoadSaveFile ;Goes to LoadSaveFile so it has a file already open when the p
 return
 
 MenuFileNew:
+GuiControl,,ProgressBar, 0
 IniRead,LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 
 ;If ! CurrentSaveFile="" 
@@ -130,7 +133,6 @@ else
 }
 
 LoadSaveFile:
-TV_Delete()
 IniWrite, %CurrentSaveFile%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 IniRead, ProgramDescription, %CurrentSaveFile%, ProgramInfo, ProgramDescription
@@ -243,8 +245,16 @@ ChangeProjectName:
 return
 DeleteProject:
 return
+
 NewProjectMenu:
+NewProjectCount+=1
+ProjectName=New Project %NewProjectCount%
+IniRead, ProjectList, %CurrentSaveFile%, ProgramInfo, Projects
+IniWrite, %ProjectList%|%ProjectName%, %CurrentSaveFile%, ProgramInfo, Projects
+WriteNewProject(ProjectName,NewProjectCount,CurrentSaveFile)
+TV_Delete()
 return
+
 TagsButton:
 return
 SaveUpdate:

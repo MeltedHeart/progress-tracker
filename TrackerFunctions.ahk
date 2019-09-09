@@ -34,7 +34,7 @@ EnableUpdateGui()
 	GuiControl, Enable, UpdateTitle
 	GuiControl, Enable, UpdateDescription
 	GuiControl, Enable, UpdateList
-	GuiControl, Enable, TagsButton
+	;GuiControl, Enable, TagsButton // Placeholder until Tag feature is completed
 	GuiControl, Enable, SaveUpdate
 	GuiControl, Enable, PercentEdit
 }
@@ -54,12 +54,13 @@ EnableAllMenus()
 TreeViewLoader(ParentProgram,ProjectChildren,SaveFile)
 {
 	Global
+	TV_Delete()
 	P1 := TV_Add(ParentProgram)
 	LastMainTaskLoop=1
 	Loop, Parse, ProjectChildren, `|
 	{
 		P1C%A_Index% := TV_Add(A_LoopField,P1,"Bold")
-		IniRead, TVLTaskList, %CurrentSaveFile%, %A_LoopField%, Tasks
+		IniRead, TVLTaskList, %SaveFile%, %A_LoopField%, Tasks
 		Loop, Parse, TVLTaskList, `|
 		{
 			P1C1C1 := TV_Add(A_LoopField,P1C%LastMainTaskLoop%)
@@ -88,7 +89,6 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			GuiControl,,MainPropertiesText, Title: %SelectedTaskTitle%`nCreator: %CurrentUser%`nDate: %SelectedTaskDate%`nLast Change: %SelectedTaskLastChange%
 		}
 	}
-	return
 }
 
 CreateTempFile(WhereToSave)
@@ -97,3 +97,9 @@ CreateTempFile(WhereToSave)
 	FormatTime, Localtiem, ,ShortDate
 	FileAppend ,[ProgramInfo]`nProgramName=New Program`nCreator=`nCreatorVersion=`nProjects=`n[Program1]`nCreator=`nDate=%Localtiem%`nLastChange=`nProjectDescription=,%A_temp%\ProgressTracker\New_File.ptp
 }	
+
+WriteNewProject(ProjectName,Count,SaveFile)
+{
+	FormatTime, LocalTime,,ShortDate
+	FileAppend,`n[%ProjectName%]`nProjectTitle=%ProjectName%`nCreator=%A_User%`nDate=%LocalTime%`nLastChange=%LocalTime%`nProjectDescription=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProjectNotes=`nProjectReminder=`nTasks= New Task %Count%`nTask%Count%=New Task %Count%`nTaskDescription1=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProgressTracker1=0,%SaveFile%
+}
