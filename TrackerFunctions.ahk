@@ -77,6 +77,9 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 	{
 		if A_LoopField = %Selected%
 		{
+			LV_Delete()
+			GuiControl,, UpdateTitle, Update Title
+			GuiControl,, UpdateDescription, Update Description
 			IniRead, ProgressBarPercent, %SaveFile%, %ParentName%, ProgressTracker%A_Index%
 			GuiControl,,ProgressBar, %ProgressBarPercent%
 			IniRead, SelectedTaskDescription, %SaveFile%, %ParentName%, TaskDescription%A_Index%
@@ -86,6 +89,22 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			IniRead, SelectedTaskDate, %SaveFile%, %ParentName%, Date
 			IniRead, SelectedTaskLastChange, %SaveFile%, %ParentName%, LastChange
 			GuiControl,,MainPropertiesText, Title: %SelectedTaskTitle%`nCreator: %CurrentUser%`nDate: %SelectedTaskDate%`nLast Change: %SelectedTaskLastChange%
+			IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+			UpdateListPath=%A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedTaskTitle%.ptl
+			CSV_Load(UpdateListPath,"UpdateListCSV",",")
+			UpdateAmount:=CSV_TotalRows("UpdateListCSV")
+			Loop, %UpdateAmount%
+			{
+				LV_Delete()
+				RowNum=%A_Index%
+				UpdateListTitle:=CSV_ReadCell("UpdateListCSV",RowNum,1)
+				UpdateListPercentage:=CSV_ReadCell("UpdateListCSV",RowNum,2)
+				UpdateListTime:=CSV_ReadCell("UpdateListCSV",RowNum,3)
+				UpdateListConvertedTime:=CSV_ReadCell("UpdateListCSV",RowNum,4)
+				UpdateListUpdateFile:=CSV_ReadCell("UpdateListCSV",RowNum,5)
+				LV_Add("",UpdateListTitle,UpdateListPercentage,UpdateListTime,UpdateListConvertedTime,UpdateListUpdateFile)
+				LV_ModifyCol(3, "SortDesc")
+			}
 		}
 	}
 }

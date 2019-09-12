@@ -9,6 +9,7 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #SingleInstance,Force
 #Include TrackerFunctions.ahk
+#Include csv.ahk
 
 FileCreateDir, %A_MyDocuments%\ProgressTracker
 FileCreateDir, %A_MyDocuments%\ProgressTracker\DemoPrograms
@@ -69,20 +70,27 @@ Gui, Add, Text,vMainDescriptionText w220 h125 , Click on an item to view more
 Gui, Tab, 2
 Gui, Add, Text,vMainPropertiesText w220 h125 , Click on an item to view more
 Gui, Tab
-Gui, Add, Tab3,+hide vTaskBox x265 y8 w600 h572, Info
-Gui, Add, GroupBox, w570 h100, Current Progress
-Gui, Add, GroupBox, w570 h258, Updates
-Gui, Add, GroupBox, w570 h155, Notes and Reminders
-Gui, Add, Progress, vProgressBar x300 y70 w530 h50, 1
-Gui, Add, ListView, vUpdateList x290 y170 w195 h225, Title|`%|Date
-Gui, Add, Edit, vUpdateTitle x500 y170 w335 h20, Update Title
-Gui, Add, Edit, vUpdateDescription x500 y200 w335 h160, Update Description
-Gui, Add, Text,x500 y370, Progress
-Gui, Add, Edit, vPercentEdit x560 y368 w50
+Gui, Add, Tab3,+hide vTaskBox x265 y8 w610 h572, Info
+Gui, Add, GroupBox, w580 h100, Current Progress
+Gui, Add, GroupBox, w580 h258, Updates
+Gui, Add, GroupBox, w580 h155, Notes and Reminders
+Gui, Add, Progress, vProgressBar x300 y70 w540 h50, 1
+Gui, Font, s9
+Gui, Add, ListView, gUpdateListView vUpdateListView AltSubmit x290 y170 w210 h225, Title|`%|UCT|Date|File
+LV_ModifyCol(1,80)
+LV_ModifyCol(2,30)
+LV_ModifyCol(3,0)
+LV_ModifyCol(4,96)
+LV_ModifyCol(5,0)
+Gui, Font, s11
+Gui, Add, Edit, vUpdateTitle x510 y170 w335 h20, Update Title
+Gui, Add, Edit, vUpdateDescription x510 y200 w335 h160, Update Description
+Gui, Add, Text,x510 y370, Progress
+Gui, Add, Edit, vPercentEdit x570 y368 w50
 Gui, Add, UpDown, vProgressAddPercent Range-100-100, 1 
-Gui, Add, Text,x612 y370, `%
-Gui, Add, Button,x690 y366 vTagsButton gTagsButton, Tags
-Gui, Add, Button,x740 y366 vSaveUpdate gSaveUpdate , Save Update
+Gui, Add, Text,x622 y370, `%
+Gui, Add, Button,x700 y366 vTagsButton gTagsButton, Tags
+Gui, Add, Button,x750 y366 vSaveUpdate gSaveUpdate , Save Update
 Gui, Tab
 
 Gui, Show
@@ -155,7 +163,7 @@ MenuFileSaveAs:
 DisableAllGui()
 DisableAllMenus()
 Gui, Submit, NoHide
-FileSelectFile, ProgramSave,,%A_MyDocuments%,Select where to save this program, *.ptp
+FileSelectFile, ProgramSave,S,%A_MyDocuments%\ProgressTracker\ProgramData,Select where to save this program, *.ptp
 EnableAllGui()
 EnableAllMenus()
 return
@@ -258,9 +266,29 @@ WriteNewProject(ProjectName,NewProjectCount,CurrentSaveFile)
 Goto LoadSaveFile
 return
 
+UpdateListView:
+if A_GuiEvent = Normal
+{
+	LV_GetText(UpdateFileName,A_EventInfo,5)
+	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+	IniRead, UpdateTitle, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%UpdateFileName%, UpdateInfo, UpdateTitle
+	IniRead, UpdateDescription, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%UpdateFileName%, UpdateContent, UpdateDescription
+	GuiControl,, UpdateTitle, %UpdateTitle%
+	GuiControl,, UpdateDescription, %UpdateDescription%
+}
+return
+
 TagsButton:
 return
 SaveUpdate:
+return
+
+F1::
+ToolTip, DevTimeTestingArea
+FormatTime, LocalTime,,M/d/yy h:mmtt
+Clipboard = %A_Now%`,%LocalTime%
+MsgBox, %A_Now%
+ToolTip, 
 return
 
 GuiClose:
