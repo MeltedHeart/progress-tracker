@@ -35,7 +35,8 @@ ReadSettingsIni: ;Reads the settings file
 IniRead, LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 CurrentSaveFile=%LastOpenProgram% ; Set the Current Save File as the last opened one
 ; Creating the GUI
-Gui, New,, Progress Tracker
+Gui, ProgressTracker:New,, Progress Tracker
+Gui, ProgressTracker:Default
 Gui, Font, s11
 
 Menu, FileMenu, Add, &New Program`tCtrl+N, MenuFileNew
@@ -247,12 +248,14 @@ DeleteProject:
 return
 
 NewProjectMenu:
+Gui, ProgressTracker:Default
+Gui, Treeview, MainTreeView
 NewProjectCount+=1
 ProjectName=New Project %NewProjectCount%
 IniRead, ProjectList, %CurrentSaveFile%, ProgramInfo, Projects
 IniWrite, %ProjectList%|%ProjectName%, %CurrentSaveFile%, ProgramInfo, Projects
 WriteNewProject(ProjectName,NewProjectCount,CurrentSaveFile)
-TV_Delete()
+Goto LoadSaveFile
 return
 
 TagsButton:

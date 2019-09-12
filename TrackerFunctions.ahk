@@ -53,7 +53,6 @@ EnableAllMenus()
 
 TreeViewLoader(ParentProgram,ProjectChildren,SaveFile)
 {
-	Global
 	TV_Delete()
 	P1 := TV_Add(ParentProgram)
 	LastMainTaskLoop=1
