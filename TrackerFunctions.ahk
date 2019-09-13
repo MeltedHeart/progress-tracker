@@ -73,6 +73,7 @@ TreeViewLoader(ParentProgram,ProjectChildren,SaveFile)
 TaskLoader(Selected,ParentName,TaskList,SaveFile)
 {
 	global
+	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 	Loop, Parse, TaskList, `|
 	{
 		if A_LoopField = %Selected%
@@ -106,7 +107,26 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 				LV_ModifyCol(3, "SortDesc")
 			}
 		}
+		if Selected = %SavedProgramName%
+		{
+			LV_Delete()
+			GuiControl,, UpdateTitle, Update Title
+			GuiControl,, UpdateDescription, Update Description
+		}
+		;else
+		;{
+		;	LV_Delete()
+		;	GuiControl,, UpdateTitle, Update Title
+		;	GuiControl,, UpdateDescription, Update Description
+		;}
 	}
+}
+
+ProjectLoader()
+{
+	LV_Delete()
+	GuiControl,, UpdateTitle, Update Title
+	GuiControl,, UpdateDescription, Update Description
 }
 
 CreateTempFile(WhereToSave)

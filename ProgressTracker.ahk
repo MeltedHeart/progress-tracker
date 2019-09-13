@@ -232,10 +232,10 @@ else
 		IniRead, TaskList, %CurrentSaveFile%, %TVItemTaskName%, Tasks
 		TaskLoader(TVItemName,TVItemTaskName,TaskList,CurrentSaveFile)
 	}
-	;if TV_Get(A_EventInfo, "Bold")
-	;{
-	;	Placeholder to fix reading overall progress from projects
-	;}
+	if TV_Get(A_EventInfo, "Bold")
+	{
+		ProjectLoader()
+	}
 	if SelectedProjectDescription=ERROR
 	{
 		return
