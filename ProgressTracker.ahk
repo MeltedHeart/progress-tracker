@@ -2,7 +2,6 @@
 Codename=ProgressTracker
 CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
 Temp_File=0 ; 
-NewProjectCount=0
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ;#Warn  ; Enable warnings to assist with detecting common errors.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -28,12 +27,14 @@ else
 CreateSettingsIni: ;Creates the settings file
 CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
 CreateTempFile(CurrentSaveFile)
-IniWrite, %A_temp%\ProgressTracker\New_File.ptp, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
+IniWrite, %A_Temp%\ProgressTracker\New_File.ptp, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
+IniWrite, 0, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewCount
 Goto ReadSettingsIni
 return
 
 ReadSettingsIni: ;Reads the settings file
 IniRead, LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
+IniRead, NewProjectCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewCount
 CurrentSaveFile=%LastOpenProgram% ; Set the Current Save File as the last opened one
 ; Creating the GUI
 Gui, ProgressTracker:New,, Progress Tracker
@@ -276,7 +277,9 @@ return
 NewProjectMenu:
 Gui, ProgressTracker:Default
 Gui, Treeview, MainTreeView
+IniRead, NewProjectCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewCount
 NewProjectCount+=1
+IniWrite, %NewProjectCount%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewCount
 ProjectName=New Project %NewProjectCount%
 IniRead, ProjectList, %CurrentSaveFile%, ProgramInfo, Projects
 IniWrite, %ProjectList%|%ProjectName%, %CurrentSaveFile%, ProgramInfo, Projects
