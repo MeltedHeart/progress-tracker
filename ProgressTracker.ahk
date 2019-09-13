@@ -252,7 +252,25 @@ ChangeProjectDescription:
 return
 ChangeProjectName:
 return
+
 DeleteProject:
+Gui, ProgressTracker:Default
+IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+if TV_Get(TVItemID, "Bold")
+{
+	DeleteProject(TVItemName,CurrentSaveFile)
+	Goto LoadSaveFile
+}
+if TVItemName = %SavedProgramName%
+{
+	MsgBox 16, Warning, You cannot delete a Program! 
+}
+else
+{
+	DeleteTask()
+}
 return
 
 NewProjectMenu:

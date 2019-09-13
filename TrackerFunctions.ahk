@@ -129,6 +129,21 @@ ProjectLoader()
 	GuiControl,, UpdateDescription, Update Description
 }
 
+DeleteProject(ProjectName,SaveFile)
+{
+	; \\ Placeholder
+	IniRead, ProjectList, %SaveFile%, ProgramInfo, Projects
+	PipeProjectName=|%ProjectName%
+	StringReplace, ProjectList, ProjectList, %PipeProjectName%,, All
+	IniWrite, %ProjectList%, %SaveFile%, ProgramInfo, Projects
+	IniDelete, %SaveFile%,%ProjectName%
+}
+
+DeleteTask()
+{
+	; \\ Placeholder
+}
+
 CreateTempFile(WhereToSave)
 {
 	FileDelete,  %A_temp%\ProgressTracker\New_File.ptp
