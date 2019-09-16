@@ -1,8 +1,8 @@
 ; /// Tracker Library ///
 
-BoiBox()
+BoiBox(DebugText)
 {
-	MsgBox, BOI
+	MsgBox, BOI`n%DebugText%
 }
 
 DisableAllGui()
@@ -210,4 +210,35 @@ WriteNewTask(TaskName,ProjectName,SaveFile)
 	IniWrite, %TaskName%, %SaveFile%, %ProjectName%, Task%TaskAmount%
 	IniWrite, You can change this name/description by left clicking on this task, %SaveFile%, %ProjectName%, TaskDescription%TaskAmount%
 	IniWrite, 0, %SaveFile%, %ProjectName%, ProgressTracker%TaskAmount%
+}
+
+ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
+{
+	InputBox, NewItemName, Change Name, Choose a new name for this item,,250,125
+	if ProjectOrTask = 1
+	{
+		IniRead, TaskList, %SaveFile%, %ProjectName%, Tasks
+		Loop, Parse, TaskList, `|
+		{
+			if A_LoopField = %SelectedItem%
+			{
+				TaskNumber = %A_Index%
+				IniWrite, %NewItemName%, %SaveFile%, %ProjectName%, Task%TaskNumber%
+			}
+		}
+		StringReplace, TaskList, TaskList, %SelectedItem%, %NewItemName%
+		IniWrite, %TaskList%, %SaveFile%, %ProjectName%, Tasks
+	}
+	if ProjectOrTask = 0
+	{
+		IniRead, ProjectList, %SaveFile%, ProgramInfo, Projects
+		StringReplace, ProjectList, ProjectList, %SelectedItem%, %NewItemName%
+		IniWrite, %ProjectList%, %SaveFile%, ProgramInfo, Projects
+		FileRead, SaveFileString, %SaveFile%
+		StringReplace, SaveFileString, SaveFileString, %SelectedItem%, %NewItemName%
+		FileDelete, %SaveFile%
+		FileAppend, %SaveFileString%, %SaveFile%
+		IniWrite, %NewItemName%, %SaveFile%, %NewItemName%, ProjectTitle
+		BoiBox(Not Working Yet)
+	}
 }

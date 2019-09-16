@@ -197,7 +197,7 @@ If A_GuiEvent = RightClick
 	if TV_Get(A_EventInfo, "Bold")
 	{
 		Menu, ContextEditProjectMenu, Add, New Task, NewTaskMenu
-		Menu, ContextEditProjectMenu, Add, Change Name , ChangeProjectName
+		Menu, ContextEditProjectMenu, Add, Change Name , ChangeName
 		Menu, ContextEditProjectMenu, Add, Change Description , ChangeProjectDescription
 		Menu, ContextEditProjectMenu, Add, Delete , DeleteProject
 		Menu, ContextEditProjectMenu ,Show
@@ -205,7 +205,7 @@ If A_GuiEvent = RightClick
 	}
 	else
 	{
-		Menu , ContextEditTaskMenu , Add , Change Name , ChangeProjectName
+		Menu , ContextEditTaskMenu , Add , Change Name , ChangeName
 		Menu , ContextEditTaskMenu , Add , Change Description , ChangeProjectDescription
 		Menu , ContextEditTaskMenu , Add , Delete , DeleteProject
 		Menu , ContextEditTaskMenu , Show
@@ -265,7 +265,24 @@ return
 
 ChangeProjectDescription:
 return
-ChangeProjectName:
+
+ChangeName:
+Gui, ProgressTracker:Default
+Gui, Treeview, MainTreeView
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+TVItemParentID := TV_GetParent(TVItemID)
+TV_GetText(TVItemParentName, TVItemParentID)
+if TV_Get(TVItemID, "Bold")
+{
+	ChangeName(TVItemName,TVItemParentName,CurrentSaveFile,0)
+	Goto LoadSaveFile
+}
+else
+{
+	ChangeName(TVItemName,TVItemParentName,CurrentSaveFile,1)
+	Goto LoadSaveFile
+}
 return
 
 DeleteProject:
