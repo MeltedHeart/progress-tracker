@@ -270,7 +270,11 @@ if TVItemName = %SavedProgramName%
 }
 else
 {
-	DeleteTask()
+	ToolTip, DeleteTask function
+	TVItemParentID := TV_GetParent(TVItemID)
+	TV_GetText(TVItemParentName, TVItemParentID)
+	DeleteTask(TVItemParentName,TVItemName,CurrentSaveFile)
+	Goto LoadSaveFile
 }
 return
 

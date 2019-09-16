@@ -131,17 +131,59 @@ ProjectLoader()
 
 DeleteProject(ProjectName,SaveFile)
 {
-	; \\ Placeholder
 	IniRead, ProjectList, %SaveFile%, ProgramInfo, Projects
 	PipeProjectName=|%ProjectName%
 	StringReplace, ProjectList, ProjectList, %PipeProjectName%,, All
+	if ErrorLevel = 1
+	{
+		ProjectNamePipe=%ProjectName%|
+		StringReplace, ProjectList, ProjectList, %ProjectNamePipe%,, All
+		if ErrorLevel = 1
+		{
+			StringReplace, ProjectList, ProjectList, %ProjectName%,, All
+		}
+	}
 	IniWrite, %ProjectList%, %SaveFile%, ProgramInfo, Projects
 	IniDelete, %SaveFile%,%ProjectName%
 }
 
-DeleteTask()
+DeleteTask(ProjectName,TaskName,SaveFile)
 {
-	; \\ Placeholder
+	IniRead, TaskList, %SaveFile%, %ProjectName%, Tasks
+	Loop, Parse, TaskList, `|
+	{
+		TaskAmount = %A_Index%
+	}
+	if TaskAmount = 1
+	{
+		MsgBox 16, Warning, You cannot delete this task!`nA Project cannot be empty, please create a new task before deleting this one
+		return
+	}
+	else
+	{
+		Loop, Parse, TaskList, `|
+		{
+			if A_LoopField = %TaskName%
+			{
+				PipeTaskName=|%TaskName%
+				StringReplace, TaskList, TaskList, %PipeTaskName%
+				if ErrorLevel = 1
+				{
+					TaskNamePipe = %TaskName%|
+					StringReplace, TaskList, TaskList, %TaskNamePipe%
+					if ErrorLevel = 1
+					{
+						StringReplace, TaskList, TaskList, %TaskName%
+					}
+				}
+				IniWrite, %TaskList%, %SaveFile%, %ProjectName%, Tasks
+				TaskNum = %A_Index%
+				IniDelete, %SaveFile%,%ProjectName%, Task%TaskNum%
+				IniDelete, %SaveFile%,%ProjectName%, TaskDescription%TaskNum%
+				IniDelete, %SaveFile%,%ProjectName%, ProgressTracker%TaskNum%
+			}
+		}
+	}
 }
 
 CreateTempFile(WhereToSave)
