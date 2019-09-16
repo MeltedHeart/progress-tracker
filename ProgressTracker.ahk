@@ -251,7 +251,16 @@ return
 NewTaskMenu:
 Gui, ProgressTracker:Default
 Gui, Treeview, MainTreeView
-
+IniRead, NewTaskCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
+NewTaskCount+=1
+IniWrite, %NewTaskCount%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
+TaskName=New Task %NewTaskCount%
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+IniRead, TaskList, %CurrentSaveFile%, %TVItemName%, Tasks
+IniWrite, %TaskList%|%TaskName%, %CurrentSaveFile%, %TVItemName%, Tasks
+WriteNewTask(TaskName,TVItemName,CurrentSaveFile)
+Goto LoadSaveFile
 return
 
 ChangeProjectDescription:
@@ -275,7 +284,6 @@ if TVItemName = %SavedProgramName%
 }
 else
 {
-	ToolTip, DeleteTask function
 	TVItemParentID := TV_GetParent(TVItemID)
 	TV_GetText(TVItemParentName, TVItemParentID)
 	DeleteTask(TVItemParentName,TVItemName,CurrentSaveFile)

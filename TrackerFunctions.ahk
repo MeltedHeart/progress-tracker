@@ -198,3 +198,16 @@ WriteNewProject(ProjectName,TaskCount,SaveFile)
 	FormatTime, LocalTime,,ShortDate
 	FileAppend,`n[%ProjectName%]`nProjectTitle=%ProjectName%`nCreator=%A_User%`nDate=%LocalTime%`nLastChange=%LocalTime%`nProjectDescription=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProjectNotes=`nProjectReminder=`nTasks= New Task %TaskCount%`nTask%TaskCount%=New Task %TaskCount%`nTaskDescription1=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProgressTracker1=0,%SaveFile%
 }
+
+WriteNewTask(TaskName,ProjectName,SaveFile) 
+{
+	IniRead, TaskList, %SaveFile%, %ProjectName%, Tasks
+	Loop, Parse, TaskList, `|
+	{
+		TaskAmount = %A_Index%
+	}
+	;TaskAmount +=1
+	IniWrite, %TaskName%, %SaveFile%, %ProjectName%, Task%TaskAmount%
+	IniWrite, You can change this name/description by left clicking on this task, %SaveFile%, %ProjectName%, TaskDescription%TaskAmount%
+	IniWrite, 0, %SaveFile%, %ProjectName%, ProgressTracker%TaskAmount%
+}
