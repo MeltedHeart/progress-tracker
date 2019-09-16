@@ -28,7 +28,8 @@ CreateSettingsIni: ;Creates the settings file
 CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
 CreateTempFile(CurrentSaveFile)
 IniWrite, %A_Temp%\ProgressTracker\New_File.ptp, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
-IniWrite, 0, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewCount
+IniWrite, 0, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewProjectCount
+IniWrite, 0, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
 Goto ReadSettingsIni
 return
 
@@ -248,7 +249,11 @@ else
 return
 
 NewTaskMenu:
+Gui, ProgressTracker:Default
+Gui, Treeview, MainTreeView
+
 return
+
 ChangeProjectDescription:
 return
 ChangeProjectName:
@@ -281,13 +286,16 @@ return
 NewProjectMenu:
 Gui, ProgressTracker:Default
 Gui, Treeview, MainTreeView
-IniRead, NewProjectCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewCount
+IniRead, NewProjectCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewProjectCount
+IniRead, NewTaskCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
 NewProjectCount+=1
-IniWrite, %NewProjectCount%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewCount
+NewTaskCount+=1
+IniWrite, %NewProjectCount%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewProjectCount
+IniWrite, %NewTaskCount%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
 ProjectName=New Project %NewProjectCount%
 IniRead, ProjectList, %CurrentSaveFile%, ProgramInfo, Projects
 IniWrite, %ProjectList%|%ProjectName%, %CurrentSaveFile%, ProgramInfo, Projects
-WriteNewProject(ProjectName,NewProjectCount,CurrentSaveFile)
+WriteNewProject(ProjectName,NewTaskCount,CurrentSaveFile)
 Goto LoadSaveFile
 return
 

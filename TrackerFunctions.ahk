@@ -193,8 +193,8 @@ CreateTempFile(WhereToSave)
 	FileAppend ,[ProgramInfo]`nProgramName=New Program`nCreator=`nCreatorVersion=`nProjects=`n[Program1]`nCreator=`nDate=%Localtiem%`nLastChange=`nProjectDescription=,%A_temp%\ProgressTracker\New_File.ptp
 }	
 
-WriteNewProject(ProjectName,Count,SaveFile)
+WriteNewProject(ProjectName,TaskCount,SaveFile)
 {
 	FormatTime, LocalTime,,ShortDate
-	FileAppend,`n[%ProjectName%]`nProjectTitle=%ProjectName%`nCreator=%A_User%`nDate=%LocalTime%`nLastChange=%LocalTime%`nProjectDescription=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProjectNotes=`nProjectReminder=`nTasks= New Task %Count%`nTask%Count%=New Task %Count%`nTaskDescription1=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProgressTracker1=0,%SaveFile%
+	FileAppend,`n[%ProjectName%]`nProjectTitle=%ProjectName%`nCreator=%A_User%`nDate=%LocalTime%`nLastChange=%LocalTime%`nProjectDescription=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProjectNotes=`nProjectReminder=`nTasks= New Task %TaskCount%`nTask%TaskCount%=New Task %TaskCount%`nTaskDescription1=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProgressTracker1=0,%SaveFile%
 }
