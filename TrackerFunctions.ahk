@@ -215,6 +215,15 @@ WriteNewTask(TaskName,ProjectName,SaveFile)
 ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 {
 	InputBox, NewItemName, Change Name, Choose a new name for this item,,250,125
+	if ErrorLevel = 1
+	{
+		return
+	}
+	if NewItemName =
+	{
+		MsgBox 16, Warning, Item Name cannot be empty!
+		return
+	}
 	if ProjectOrTask = 1
 	{
 		IniRead, TaskList, %SaveFile%, %ProjectName%, Tasks
