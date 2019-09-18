@@ -318,6 +318,7 @@ return
 ChangeName:
 Gui, ProgressTracker:Default
 Gui, Treeview, MainTreeView
+IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 TVItemID := TV_GetSelection()
 TV_GetText(TVItemName, TVItemID)
 TVItemParentID := TV_GetParent(TVItemID)
@@ -326,6 +327,11 @@ if TV_Get(TVItemID, "Bold")
 {
 	ChangeName(TVItemName,TVItemParentName,CurrentSaveFile,0)
 	Goto LoadSaveFile
+}
+if TVItemName = %SavedProgramName% 
+{
+	ChangeName(TVItemName,TVItemParentName,CurrentSaveFile,2)
+	Goto LoadSaveFile 
 }
 else
 {

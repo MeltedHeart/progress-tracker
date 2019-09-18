@@ -249,4 +249,11 @@ ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 		FileAppend, %SaveFileString%, %SaveFile%
 		IniWrite, %NewItemName%, %SaveFile%, %NewItemName%, ProjectTitle
 	}
+	if ProjectOrTask = 2
+	{
+		IniWrite, %NewItemName%, %SaveFile%, ProgramInfo , ProgramName
+		FileRead, SaveFileString, %SaveFile%
+		StringReplace, SaveFileString, SaveFileString, %SelectedItem%, %NewItemName%
+		IniWrite, %NewItemName%, %SaveFile%, %NewItemName%, ProjectTitle
+	}
 }
