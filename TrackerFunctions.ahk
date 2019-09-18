@@ -190,7 +190,7 @@ CreateTempFile(WhereToSave)
 {
 	FileDelete,  %A_temp%\ProgressTracker\New_File.ptp
 	FormatTime, Localtiem, ,ShortDate
-	FileAppend ,[ProgramInfo]`nProgramName=New Program`nCreator=`nCreatorVersion=`nProjects=`n[Program1]`nCreator=`nDate=%Localtiem%`nLastChange=`nProjectDescription=,%A_temp%\ProgressTracker\New_File.ptp
+	FileAppend ,[ProgramInfo]`nProgramName=New Program`nCreator=%A_UserName%`nCreatorVersion=`nProjects=`n[New Program]`nProjectTitle=New Program`nProjectDescription=You can change this name/description by left clicking on this Program`nCreator=`nDate=%Localtiem%`nLastChange=`nProjectDescription=You can change this name/description by left clicking on this Program,%A_temp%\ProgressTracker\New_File.ptp
 }	
 
 WriteNewProject(ProjectName,TaskCount,SaveFile)
