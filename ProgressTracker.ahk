@@ -1,7 +1,8 @@
 ﻿; /// Progress Tracker ///
 Codename=ProgressTracker
 CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
-Temp_File=0 ; 
+Temp_File=0 ; Check to see if the current file is a temp file
+SaveLocation=%A_MyDocuments%\ProgressTracker\ProgramData ; Default save location
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ;#Warn  ; Enable warnings to assist with detecting common errors.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -26,7 +27,7 @@ else
 
 CreateSettingsIni: ;Creates the settings file
 CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
-CreateTempFile(CurrentSaveFile)
+CreateNewFile("New File",CurrentSaveFile)
 IniWrite, %A_Temp%\ProgressTracker\New_File.ptp, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 IniWrite, 0, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewProjectCount
 IniWrite, 0, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
@@ -44,7 +45,6 @@ Gui, Font, s11
 
 Menu, FileMenu, Add, &New Program`tCtrl+N, MenuFileNew
 Menu, FileMenu, Add, &Open Program`tCtrl+O, MenuFileOpen
-Menu, FileMenu, Add, &Save Program`tCtrl+S, MenuFileSave
 Menu, FileMenu, Add, Save Program As, MenuFileSaveAs
 Menu, FileMenu, Add
 Menu, FileMenu, Add, Settings, MenuSettings
@@ -102,26 +102,21 @@ return
 MenuFileNew:
 GuiControl,,ProgressBar, 0
 IniRead,LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
-
-;If ! CurrentSaveFile="" 
-;{
-	MsgBox,52,Confirm,  Your previous changes won�t be saved `, Are you sure?
-	IfMsgBox Yes
+MsgBox,52,Confirm,  Your previous changes won�t be saved `, Are you sure?
+IfMsgBox Yes
+{
+	InputBox, NewFileName, New File, Choose a name for the new file,,210,125
+	if ErrorLevel = 1
 	{
-		CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
-		CreateTempFile(CurrentSaveFile)
-		Temp_File=1
-		Goto LoadSaveFile
+		return
 	}
-	return
-;}
-;else
-;{
-;	CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
-;	CreateTempFile(CurrentSaveFile)
-;	Temp_File=1
-;	Goto LoadSaveFile
-;}
+	;CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
+	CreateNewFile(NewFileName,SaveLocation)
+	CurrentSaveFile=%A_MyDocuments%\ProgressTracker\ProgramData\%NewFileName%\%NewFileName%.ptp
+	Temp_File=1
+	Goto LoadSaveFile
+}
+return
 
 MenuFileOpen:
 DisableAllGui()
@@ -155,10 +150,6 @@ GuiControl,,MainDescriptionText, Double Click on an item to view more
 GuiControl,,MainPropertiesText, Double Click on an item to view more
 EnableAllGui()
 EnableAllMenus()
-return
-
-MenuFileSave:
-Gui, Submit, NoHide
 return
 
 MenuFileSaveAs:

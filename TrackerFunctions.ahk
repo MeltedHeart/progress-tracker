@@ -230,11 +230,15 @@ DeleteTask(ProjectName,TaskName,SaveFile)
 	}
 }
 
-CreateTempFile(WhereToSave)
+CreateNewFile(FileName,WhereToSave)
 {
 	FileDelete,  %A_temp%\ProgressTracker\New_File.ptp
-	FormatTime, Localtiem, ,ShortDate
-	FileAppend ,[ProgramInfo]`nProgramName=New Program`nCreator=%A_UserName%`nCreatorVersion=`nProjects=`n[New Program]`nProjectTitle=New Program`nProjectDescription=You can change this name/description by left clicking on this Program`nCreator=`nDate=%Localtiem%`nLastChange=`nProjectDescription=You can change this name/description by left clicking on this Program,%A_temp%\ProgressTracker\New_File.ptp
+	FileCreateDir, %WhereToSave%\%FileName%
+	FileCreateDir, %WhereToSave%\%FileName%\Notes
+	FileCreateDir, %WhereToSave%\%FileName%\Reminders
+	FileCreateDir, %WhereToSave%\%FileName%\Updates
+	FormatTime, LocalTime, ,ShortDate
+	FileAppend ,[ProgramInfo]`nProgramName=New Program`nCreator=%A_UserName%`nCreatorVersion=`nProjects=`n[New Program]`nProjectTitle=New Program`nProjectDescription=You can change this name/description by left clicking on this Program`nCreator=`nDate=%LocalTime%`nLastChange=`nProjectDescription=You can change this name/description by left clicking on this Program,%WhereToSave%\%FileName%\%FileName%.ptp
 }	
 
 WriteNewProject(ProjectName,TaskCount,SaveFile)
