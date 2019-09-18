@@ -368,7 +368,14 @@ IniWrite, %NewProjectCount%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSett
 IniWrite, %NewTaskCount%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
 ProjectName=New Project %NewProjectCount%
 IniRead, ProjectList, %CurrentSaveFile%, ProgramInfo, Projects
-IniWrite, %ProjectList%|%ProjectName%, %CurrentSaveFile%, ProgramInfo, Projects
+if TV_GetCount() = 1
+{
+	IniWrite, %ProjectName%, %CurrentSaveFile%, ProgramInfo, Projects
+}
+else
+{
+	IniWrite, %ProjectList%|%ProjectName%, %CurrentSaveFile%, ProgramInfo, Projects
+}
 WriteNewProject(ProjectName,NewTaskCount,CurrentSaveFile)
 Goto LoadSaveFile
 return
@@ -391,6 +398,10 @@ SaveUpdate:
 return
 
 F1::
+Gui, ProgressTracker:Default
+Gui, Treeview, MainTreeView
+TreeViewItemCount := TV_GetCount()
+MsgBox, %TreeViewItemCount%
 ToolTip, DevTimeTestingArea
 FormatTime, LocalTime,,M/d/yy h:mmtt
 Clipboard = %A_Now%`,%LocalTime%
