@@ -248,6 +248,5 @@ ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 		FileDelete, %SaveFile%
 		FileAppend, %SaveFileString%, %SaveFile%
 		IniWrite, %NewItemName%, %SaveFile%, %NewItemName%, ProjectTitle
-		BoiBox(Not Working Yet)
 	}
 }

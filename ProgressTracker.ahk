@@ -198,7 +198,7 @@ If A_GuiEvent = RightClick
 	{
 		Menu, ContextEditProjectMenu, Add, New Task, NewTaskMenu
 		Menu, ContextEditProjectMenu, Add, Change Name , ChangeName
-		Menu, ContextEditProjectMenu, Add, Change Description , ChangeProjectDescription
+		Menu, ContextEditProjectMenu, Add, Change Description , ChangeDescription
 		Menu, ContextEditProjectMenu, Add, Delete , DeleteProject
 		Menu, ContextEditProjectMenu ,Show
 		return
@@ -206,7 +206,7 @@ If A_GuiEvent = RightClick
 	else
 	{
 		Menu , ContextEditTaskMenu , Add , Change Name , ChangeName
-		Menu , ContextEditTaskMenu , Add , Change Description , ChangeProjectDescription
+		Menu , ContextEditTaskMenu , Add , Change Description , ChangeDescription
 		Menu , ContextEditTaskMenu , Add , Delete , DeleteProject
 		Menu , ContextEditTaskMenu , Show
 	}
@@ -263,7 +263,56 @@ WriteNewTask(TaskName,TVItemName,CurrentSaveFile)
 Goto LoadSaveFile
 return
 
-ChangeProjectDescription:
+ChangeDescription:
+Gui, ProgressTracker:Default
+Gui, Treeview, MainTreeView
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+TVItemParentID := TV_GetParent(TVItemID)
+TV_GetText(TVItemParentName, TVItemParentID)
+if TV_Get(TVItemID, "Bold")
+{
+	IniRead, CurrentProjectDescription, %CurrentSaveFile%, %TVItemName%, ProjectDescription
+	Gui, ChangeProjectDescription:New, ToolWindow, Change Description
+	Gui, Add, Edit,vProjectDescriptionText h120 w250, %CurrentProjectDescription%
+	Gui, Add, Button,gSaveProjectDescription w250,Save Description
+	Gui, Show
+	return
+}
+else
+{
+	IniRead, TaskList, %CurrentSaveFile%, %TVItemParentName%, Tasks
+	Loop, Parse, TaskList, `|
+	{
+		if A_LoopField = %TVItemName%
+		{
+			TaskNumber = %A_Index%
+		}
+	}
+	IniRead, CurrentTaskDescription, %CurrentSaveFile%, %TVItemParentName%, TaskDescription%TaskNumber%
+	Gui, ChangeTaskDescription:New, ToolWindow, Change Description
+	Gui, Add, Edit,vTaskDescriptionText h120 w250, %CurrentTaskDescription%
+	Gui, Add, Button,gSaveTaskDescription w250,Save Description
+	Gui, Show
+	return
+}
+return
+
+SaveProjectDescription:
+IniWrite, %ProjectDescriptionText%, %CurrentSaveFile%, %TVItemName%, ProjectDescription
+Sleep 100
+TV_Modify(TVItemID, Select)
+return
+
+SaveTaskDescription:
+Gui, Submit
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+TVItemParentID := TV_GetParent(TVItemID)
+TV_GetText(TVItemParentName, TVItemParentID)
+IniWrite, %TaskDescriptionText%, %CurrentSaveFile%, %TVItemParentName%, TaskDescription%TaskNumber%
+Sleep 100
+TV_Modify(TVItemID, Select)
 return
 
 ChangeName:
