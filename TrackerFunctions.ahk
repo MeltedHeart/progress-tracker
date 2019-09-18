@@ -81,8 +81,17 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			LV_Delete()
 			GuiControl,, UpdateTitle, Update Title
 			GuiControl,, UpdateDescription, Update Description
+			GuiControl,Enable, UpdateTitle
+			GuiControl,Enable, UpdateDescription
+			GuiControl,Enable, TagsButton
+			GuiControl,Enable, SaveUpdate
+			GuiControl,Enable, ProgressAddPercent
+			GuiControl,Enable, PercentEdit
 			IniRead, ProgressBarPercent, %SaveFile%, %ParentName%, ProgressTracker%A_Index%
 			GuiControl,,ProgressBar, %ProgressBarPercent%
+			ProgressRange := 100 - ProgressBarPercent
+			GuiControl,, ProgressAddPercent, 0
+			GuiControl,+Range-%ProgressBarPercent%-%ProgressRange%, ProgressAddPercent
 			IniRead, SelectedTaskDescription, %SaveFile%, %ParentName%, TaskDescription%A_Index%
 			GuiControl,,MainDescriptionText, %SelectedTaskDescription%
 			IniRead, SelectedTaskTitle, %SaveFile%, %ParentName%, Task%A_Index%
@@ -112,13 +121,26 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			LV_Delete()
 			GuiControl,, UpdateTitle, Update Title
 			GuiControl,, UpdateDescription, Update Description
+			GuiControl,Disable, UpdateTitle
+			GuiControl,Disable, UpdateDescription
+			GuiControl,Disable, TagsButton
+			GuiControl,Disable, SaveUpdate
+			GuiControl,Disable, ProgressAddPercent
+			GuiControl,Disable, PercentEdit
 		}
-		;else
-		;{
-		;	LV_Delete()
-		;	GuiControl,, UpdateTitle, Update Title
-		;	GuiControl,, UpdateDescription, Update Description
-		;}
+		IniRead, ProjectList, %SaveFile%, ProgramInfo, Projects
+		IfInString, ProjectList, %Selected%
+		{
+			LV_Delete()
+			GuiControl,, UpdateTitle, Update Title
+			GuiControl,, UpdateDescription, Update Description
+			GuiControl,Disable, UpdateTitle
+			GuiControl,Disable, UpdateDescription
+			GuiControl,Disable, TagsButton
+			GuiControl,Disable, SaveUpdate
+			GuiControl,Disable, ProgressAddPercent
+			GuiControl,Disable, PercentEdit
+		}
 	}
 }
 

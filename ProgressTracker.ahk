@@ -88,7 +88,7 @@ Gui, Font, s11
 Gui, Add, Edit, vUpdateTitle x510 y170 w335 h20, Update Title
 Gui, Add, Edit, vUpdateDescription x510 y200 w335 h160, Update Description
 Gui, Add, Text,x510 y370, Progress
-Gui, Add, Edit, vPercentEdit x570 y368 w50
+Gui, Add, Edit, vPercentEdit ReadOnly x570 y368 w50
 Gui, Add, UpDown, vProgressAddPercent Range-100-100, 1 
 Gui, Add, Text,x622 y370, `%
 Gui, Add, Button,x700 y366 vTagsButton gTagsButton, Tags
@@ -393,8 +393,16 @@ if A_GuiEvent = Normal
 	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 	IniRead, UpdateTitle, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%UpdateFileName%, UpdateInfo, UpdateTitle
 	IniRead, UpdateDescription, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%UpdateFileName%, UpdateContent, UpdateDescription
-	GuiControl,, UpdateTitle, %UpdateTitle%
-	GuiControl,, UpdateDescription, %UpdateDescription%
+	if UpdateTitle = ERROR
+	{
+		GuiControl,, UpdateTitle, Update Title
+		GuiControl,, UpdateDescription, Update Description
+	}
+	else
+	{
+		GuiControl,, UpdateTitle, %UpdateTitle%
+		GuiControl,, UpdateDescription, %UpdateDescription%
+	}
 }
 return
 
