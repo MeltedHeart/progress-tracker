@@ -88,6 +88,7 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			GuiControl,Enable, ProgressAddPercent
 			GuiControl,Enable, PercentEdit
 			IniRead, ProgressBarPercent, %SaveFile%, %ParentName%, ProgressTracker%A_Index%
+			GuiControl,+Range0-100, ProgressBar
 			GuiControl,,ProgressBar, %ProgressBarPercent%
 			ProgressRange := 100 - ProgressBarPercent
 			GuiControl,, ProgressAddPercent, 0
@@ -144,11 +145,32 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 	}
 }
 
-ProjectLoader()
+ProjectLoader(ProjectName,SaveFile)
 {
 	LV_Delete()
 	GuiControl,, UpdateTitle, Update Title
 	GuiControl,, UpdateDescription, Update Description
+	;GuiControl,Disable, UpdateListView
+	GuiControl,Disable, UpdateTitle
+	GuiControl,Disable, UpdateDescription
+	GuiControl,Disable, TagsButton
+	GuiControl,Disable, SaveUpdate
+	GuiControl,Disable, ProgressAddPercent
+	GuiControl,Disable, PercentEdit
+	IniRead, TaskList, %SaveFile%, %ProjectName%, Tasks
+	Loop, Parse, TaskList, `|
+	{
+		TaskAmount = %A_Index%
+	}
+	TaskProgressTotalRange := (TaskAmount*100)
+	;ProgressSum = 0
+	Loop, Parse, TaskList, `|
+	{
+		IniRead, TaskProgress, %SaveFile%, %ProjectName%, ProgressTracker%A_Index%
+		ProgressSum += %TaskProgress%
+	}
+	GuiControl,+Range0-%TaskProgressTotalRange%, ProgressBar
+	GuiControl,, ProgressBar, %ProgressSum%
 }
 
 DeleteProject(ProjectName,SaveFile)

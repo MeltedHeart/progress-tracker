@@ -236,7 +236,7 @@ else
 	}
 	if TV_Get(A_EventInfo, "Bold")
 	{
-		ProjectLoader()
+		ProjectLoader(TVItemName,CurrentSaveFile)
 	}
 	if SelectedProjectDescription=ERROR
 	{
