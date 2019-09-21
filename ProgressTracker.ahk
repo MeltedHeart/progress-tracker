@@ -299,6 +299,11 @@ else
 return
 
 SaveProjectDescription:
+Gui, Submit
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+TVItemParentID := TV_GetParent(TVItemID)
+TV_GetText(TVItemParentName, TVItemParentID)
 IniWrite, %ProjectDescriptionText%, %CurrentSaveFile%, %TVItemName%, ProjectDescription
 Sleep 100
 TV_Modify(TVItemID, Select)
