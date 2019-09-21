@@ -270,12 +270,22 @@ TVItemID := TV_GetSelection()
 TV_GetText(TVItemName, TVItemID)
 TVItemParentID := TV_GetParent(TVItemID)
 TV_GetText(TVItemParentName, TVItemParentID)
+IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 if TV_Get(TVItemID, "Bold")
 {
 	IniRead, CurrentProjectDescription, %CurrentSaveFile%, %TVItemName%, ProjectDescription
 	Gui, ChangeProjectDescription:New, ToolWindow, Change Description
 	Gui, Add, Edit,vProjectDescriptionText h120 w250, %CurrentProjectDescription%
 	Gui, Add, Button,gSaveProjectDescription w250,Save Description
+	Gui, Show
+	return
+}
+if SavedProgramName = %TVItemName%
+{
+	IniRead, CurrentProgramDescription, %CurrentSaveFile%, %TVItemName%, ProjectDescription
+	Gui, ChangeProgramDescription:New, ToolWindow, Change Description
+	Gui, Add, Edit,vProgramDescriptionText h120 w250, %CurrentProgramDescription%
+	Gui, Add, Button,gSaveProgramDescription w250,Save Description
 	Gui, Show
 	return
 }
@@ -305,6 +315,17 @@ TV_GetText(TVItemName, TVItemID)
 TVItemParentID := TV_GetParent(TVItemID)
 TV_GetText(TVItemParentName, TVItemParentID)
 IniWrite, %ProjectDescriptionText%, %CurrentSaveFile%, %TVItemName%, ProjectDescription
+Sleep 100
+TV_Modify(TVItemID, Select)
+return
+
+SaveProgramDescription:
+Gui, Submit
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+TVItemParentID := TV_GetParent(TVItemID)
+TV_GetText(TVItemParentName, TVItemParentID)
+IniWrite, %ProgramDescriptionText%, %CurrentSaveFile%, %TVItemName%, ProjectDescription
 Sleep 100
 TV_Modify(TVItemID, Select)
 return
