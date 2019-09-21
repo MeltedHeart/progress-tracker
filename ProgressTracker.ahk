@@ -104,7 +104,7 @@ IniRead,LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings
 
 ;If ! CurrentSaveFile="" 
 ;{
-	MsgBox,52,Confirm,  Your previous changes won�t be saved `, Are you sure?
+	MsgBox,52,Confirm,  All progress that has not been saved will be lost`, Are you sure?
 	IfMsgBox Yes
 	{
 		CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
