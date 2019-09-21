@@ -111,6 +111,11 @@ IfMsgBox Yes
 		return
 	}
 	;CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
+	if NewFileName =
+	{
+		MsgBox 16, Warning, Item Name cannot be empty!
+		return
+	}
 	CreateNewFile(NewFileName,SaveLocation)
 	CurrentSaveFile=%A_MyDocuments%\ProgressTracker\ProgramData\%NewFileName%\%NewFileName%.ptp
 	Temp_File=1
@@ -132,7 +137,7 @@ else
 {
 	EnableAllGui()
 	EnableAllMenus()
-	FileSelectFile, ProgramSave,,%A_MyDocuments%,Select a Program, *.ptp
+	FileSelectFile, ProgramSave,,%A_MyDocuments%\ProgressTracker\ProgramData,Select a Program, *.ptp
 	if ErrorLevel
 	{
 		return
