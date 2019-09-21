@@ -133,6 +133,10 @@ else
 	EnableAllGui()
 	EnableAllMenus()
 	FileSelectFile, ProgramSave,,%A_MyDocuments%,Select a Program, *.ptp
+	if ErrorLevel
+	{
+		return
+	}
 	CurrentSaveFile=%ProgramSave%	
 	Goto LoadSaveFile
 	return
@@ -399,6 +403,7 @@ return
 
 TagsButton:
 return
+
 SaveUpdate:
 return
 
