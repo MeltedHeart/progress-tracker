@@ -102,7 +102,7 @@ return
 MenuFileNew:
 GuiControl,,ProgressBar, 0
 IniRead,LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
-MsgBox,52,Confirm,  Your previous changes won�t be saved `, Are you sure?
+MsgBox,52,Confirm,  All progress that has not been saved will be lost `, Are you sure?
 IfMsgBox Yes
 {
 	InputBox, NewFileName, New File, Choose a name for the new file,,210,125
