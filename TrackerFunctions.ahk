@@ -104,9 +104,9 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			UpdateListPath=%A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedTaskTitle%.ptl
 			CSV_Load(UpdateListPath,"UpdateListCSV",",")
 			UpdateAmount:=CSV_TotalRows("UpdateListCSV")
+			LV_Delete()
 			Loop, %UpdateAmount%
 			{
-				LV_Delete()
 				RowNum=%A_Index%
 				UpdateListTitle:=CSV_ReadCell("UpdateListCSV",RowNum,1)
 				UpdateListPercentage:=CSV_ReadCell("UpdateListCSV",RowNum,2)
@@ -239,7 +239,7 @@ CreateNewFile(FileName,WhereToSave)
 	FileCreateDir, %WhereToSave%\%FileName%\Reminders
 	FileCreateDir, %WhereToSave%\%FileName%\Updates
 	FormatTime, LocalTime, ,ShortDate
-	FileAppend ,[ProgramInfo]`nProgramName=New Program`nCreator=%A_UserName%`nCreatorVersion=`nProjects=`n[New Program]`nProjectTitle=New Program`nProjectDescription=You can change this name/description by left clicking on this Program`nCreator=`nDate=%LocalTime%`nLastChange=`nProjectDescription=You can change this name/description by left clicking on this Program,%WhereToSave%\%FileName%\%FileName%.ptp
+	FileAppend ,[ProgramInfo]`nProgramName=%FileName%`nCreator=%A_UserName%`nCreatorVersion=`nProjects=`n[%FileName%]`nProjectTitle=%FileName%]`nProjectDescription=You can change this name/description by left clicking on this Program`nCreator=`nDate=%LocalTime%`nLastChange=`nProjectDescription=You can change this name/description by left clicking on this Program,%WhereToSave%\%FileName%\%FileName%.ptp
 }	
 
 WriteNewProject(ProjectName,TaskCount,SaveFile)
@@ -309,9 +309,35 @@ ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 
 WriteUpdate(Title,Description,Tags,SaveFile)
 {
+	global
 	IniWrite, %Title%, %SaveFile%, UpdateInfo, UpdateTitle
 	IniWrite, %A_Now%, %SaveFile%, UpdateInfo, UpdateTime
-	IniWrite, %A_User%, %SaveFile%, UpdateInfo, UpdateUser
+	IniWrite, A_User, %SaveFile%, UpdateInfo, UpdateUser
 	IniWrite, %Tags%, %SaveFile%, UpdateInfo, UpdateTags
 	IniWrite, %Description%, %SaveFile%, UpdateContent, UpdateDescription
+}
+
+RefreshUpdateList(SavedProgramName,ParentName,SaveFile)
+{
+	IniRead, TaskList, %SaveFile%, %ParentName%, Tasks
+	Loop, Parse, TaskList, `|
+	{
+		TaskAmount = %A_Index%
+	}
+	IniRead, SelectedTaskTitle, %SaveFile%, %ParentName%, Task%TaskAmount%
+	UpdateListPath=%A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedTaskTitle%.ptl
+	CSV_Load(UpdateListPath,"UpdateListCSV",",")
+	UpdateAmount:=CSV_TotalRows("UpdateListCSV")
+	LV_Delete()
+	Loop, %UpdateAmount%
+	{
+		RowNum=%A_Index%
+		UpdateListTitle:=CSV_ReadCell("UpdateListCSV",RowNum,1)
+		UpdateListPercentage:=CSV_ReadCell("UpdateListCSV",RowNum,2)
+		UpdateListTime:=CSV_ReadCell("UpdateListCSV",RowNum,3)
+		UpdateListConvertedTime:=CSV_ReadCell("UpdateListCSV",RowNum,4)
+		UpdateListUpdateFile:=CSV_ReadCell("UpdateListCSV",RowNum,5)
+		LV_Add("",UpdateListTitle,UpdateListPercentage,UpdateListTime,UpdateListConvertedTime,UpdateListUpdateFile)
+		LV_ModifyCol(3, "SortDesc")
+	}
 }
