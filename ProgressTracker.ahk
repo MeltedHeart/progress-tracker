@@ -1,7 +1,8 @@
 ﻿; /// Progress Tracker ///
 Codename=ProgressTracker
 CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
-Temp_File=0 ; 
+Temp_File=0 ; Check to see if the current file is a temp file
+SaveLocation=%A_MyDocuments%\ProgressTracker\ProgramData ; Default save location
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ;#Warn  ; Enable warnings to assist with detecting common errors.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -26,9 +27,10 @@ else
 
 CreateSettingsIni: ;Creates the settings file
 CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
-CreateTempFile(CurrentSaveFile)
+CreateNewFile("New File",CurrentSaveFile)
 IniWrite, %A_Temp%\ProgressTracker\New_File.ptp, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
-IniWrite, 0, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewCount
+IniWrite, 0, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewProjectCount
+IniWrite, 0, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
 Goto ReadSettingsIni
 return
 
@@ -43,7 +45,6 @@ Gui, Font, s11
 
 Menu, FileMenu, Add, &New Program`tCtrl+N, MenuFileNew
 Menu, FileMenu, Add, &Open Program`tCtrl+O, MenuFileOpen
-Menu, FileMenu, Add, &Save Program`tCtrl+S, MenuFileSave
 Menu, FileMenu, Add, Save Program As, MenuFileSaveAs
 Menu, FileMenu, Add
 Menu, FileMenu, Add, Settings, MenuSettings
@@ -87,7 +88,7 @@ Gui, Font, s11
 Gui, Add, Edit, vUpdateTitle x510 y170 w335 h20, Update Title
 Gui, Add, Edit, vUpdateDescription x510 y200 w335 h160, Update Description
 Gui, Add, Text,x510 y370, Progress
-Gui, Add, Edit, vPercentEdit x570 y368 w50
+Gui, Add, Edit, vPercentEdit ReadOnly x570 y368 w50
 Gui, Add, UpDown, vProgressAddPercent Range-100-100, 1 
 Gui, Add, Text,x622 y370, `%
 Gui, Add, Button,x700 y366 vTagsButton gTagsButton, Tags
@@ -101,26 +102,26 @@ return
 MenuFileNew:
 GuiControl,,ProgressBar, 0
 IniRead,LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
-
-;If ! CurrentSaveFile="" 
-;{
-	MsgBox,52,Confirm,  Your previous changes won�t be saved `, Are you sure?
-	IfMsgBox Yes
+MsgBox,52,Confirm,  Your previous changes won�t be saved `, Are you sure?
+IfMsgBox Yes
+{
+	InputBox, NewFileName, New File, Choose a name for the new file,,210,125
+	if ErrorLevel = 1
 	{
-		CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
-		CreateTempFile(CurrentSaveFile)
-		Temp_File=1
-		Goto LoadSaveFile
+		return
 	}
-	return
-;}
-;else
-;{
-;	CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
-;	CreateTempFile(CurrentSaveFile)
-;	Temp_File=1
-;	Goto LoadSaveFile
-;}
+	;CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
+	if NewFileName =
+	{
+		MsgBox 16, Warning, Item Name cannot be empty!
+		return
+	}
+	CreateNewFile(NewFileName,SaveLocation)
+	CurrentSaveFile=%A_MyDocuments%\ProgressTracker\ProgramData\%NewFileName%\%NewFileName%.ptp
+	Temp_File=1
+	Goto LoadSaveFile
+}
+return
 
 MenuFileOpen:
 DisableAllGui()
@@ -136,7 +137,11 @@ else
 {
 	EnableAllGui()
 	EnableAllMenus()
-	FileSelectFile, ProgramSave,,%A_MyDocuments%,Select a Program, *.ptp
+	FileSelectFile, ProgramSave,,%A_MyDocuments%\ProgressTracker\ProgramData,Select a Program, *.ptp
+	if ErrorLevel
+	{
+		return
+	}
 	CurrentSaveFile=%ProgramSave%	
 	Goto LoadSaveFile
 	return
@@ -154,10 +159,6 @@ GuiControl,,MainDescriptionText, Double Click on an item to view more
 GuiControl,,MainPropertiesText, Double Click on an item to view more
 EnableAllGui()
 EnableAllMenus()
-return
-
-MenuFileSave:
-Gui, Submit, NoHide
 return
 
 MenuFileSaveAs:
@@ -196,16 +197,16 @@ If A_GuiEvent = RightClick
 	if TV_Get(A_EventInfo, "Bold")
 	{
 		Menu, ContextEditProjectMenu, Add, New Task, NewTaskMenu
-		Menu, ContextEditProjectMenu, Add, Change Name , ChangeProjectName
-		Menu, ContextEditProjectMenu, Add, Change Description , ChangeProjectDescription
+		Menu, ContextEditProjectMenu, Add, Change Name , ChangeName
+		Menu, ContextEditProjectMenu, Add, Change Description , ChangeDescription
 		Menu, ContextEditProjectMenu, Add, Delete , DeleteProject
 		Menu, ContextEditProjectMenu ,Show
 		return
 	}
 	else
 	{
-		Menu , ContextEditTaskMenu , Add , Change Name , ChangeProjectName
-		Menu , ContextEditTaskMenu , Add , Change Description , ChangeProjectDescription
+		Menu , ContextEditTaskMenu , Add , Change Name , ChangeName
+		Menu , ContextEditTaskMenu , Add , Change Description , ChangeDescription
 		Menu , ContextEditTaskMenu , Add , Delete , DeleteProject
 		Menu , ContextEditTaskMenu , Show
 	}
@@ -235,7 +236,7 @@ else
 	}
 	if TV_Get(A_EventInfo, "Bold")
 	{
-		ProjectLoader()
+		ProjectLoader(TVItemName,CurrentSaveFile)
 	}
 	if SelectedProjectDescription=ERROR
 	{
@@ -248,10 +249,121 @@ else
 return
 
 NewTaskMenu:
+Gui, ProgressTracker:Default
+Gui, Treeview, MainTreeView
+IniRead, NewTaskCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
+NewTaskCount+=1
+IniWrite, %NewTaskCount%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
+TaskName=New Task %NewTaskCount%
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+IniRead, TaskList, %CurrentSaveFile%, %TVItemName%, Tasks
+IniWrite, %TaskList%|%TaskName%, %CurrentSaveFile%, %TVItemName%, Tasks
+WriteNewTask(TaskName,TVItemName,CurrentSaveFile)
+Goto LoadSaveFile
 return
-ChangeProjectDescription:
+
+ChangeDescription:
+Gui, ProgressTracker:Default
+Gui, Treeview, MainTreeView
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+TVItemParentID := TV_GetParent(TVItemID)
+TV_GetText(TVItemParentName, TVItemParentID)
+IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+if TV_Get(TVItemID, "Bold")
+{
+	IniRead, CurrentProjectDescription, %CurrentSaveFile%, %TVItemName%, ProjectDescription
+	Gui, ChangeProjectDescription:New, ToolWindow, Change Description
+	Gui, Add, Edit,vProjectDescriptionText h120 w250, %CurrentProjectDescription%
+	Gui, Add, Button,gSaveProjectDescription w250,Save Description
+	Gui, Show
+	return
+}
+if SavedProgramName = %TVItemName%
+{
+	IniRead, CurrentProgramDescription, %CurrentSaveFile%, %TVItemName%, ProjectDescription
+	Gui, ChangeProgramDescription:New, ToolWindow, Change Description
+	Gui, Add, Edit,vProgramDescriptionText h120 w250, %CurrentProgramDescription%
+	Gui, Add, Button,gSaveProgramDescription w250,Save Description
+	Gui, Show
+	return
+}
+else
+{
+	IniRead, TaskList, %CurrentSaveFile%, %TVItemParentName%, Tasks
+	Loop, Parse, TaskList, `|
+	{
+		if A_LoopField = %TVItemName%
+		{
+			TaskNumber = %A_Index%
+		}
+	}
+	IniRead, CurrentTaskDescription, %CurrentSaveFile%, %TVItemParentName%, TaskDescription%TaskNumber%
+	Gui, ChangeTaskDescription:New, ToolWindow, Change Description
+	Gui, Add, Edit,vTaskDescriptionText h120 w250, %CurrentTaskDescription%
+	Gui, Add, Button,gSaveTaskDescription w250,Save Description
+	Gui, Show
+	return
+}
 return
-ChangeProjectName:
+
+SaveProjectDescription:
+Gui, Submit
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+TVItemParentID := TV_GetParent(TVItemID)
+TV_GetText(TVItemParentName, TVItemParentID)
+IniWrite, %ProjectDescriptionText%, %CurrentSaveFile%, %TVItemName%, ProjectDescription
+Sleep 100
+TV_Modify(TVItemID, Select)
+return
+
+SaveProgramDescription:
+Gui, Submit
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+TVItemParentID := TV_GetParent(TVItemID)
+TV_GetText(TVItemParentName, TVItemParentID)
+IniWrite, %ProgramDescriptionText%, %CurrentSaveFile%, %TVItemName%, ProjectDescription
+Sleep 100
+TV_Modify(TVItemID, Select)
+return
+
+SaveTaskDescription:
+Gui, Submit
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+TVItemParentID := TV_GetParent(TVItemID)
+TV_GetText(TVItemParentName, TVItemParentID)
+IniWrite, %TaskDescriptionText%, %CurrentSaveFile%, %TVItemParentName%, TaskDescription%TaskNumber%
+Sleep 100
+TV_Modify(TVItemID, Select)
+return
+
+ChangeName:
+Gui, ProgressTracker:Default
+Gui, Treeview, MainTreeView
+IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+TVItemParentID := TV_GetParent(TVItemID)
+TV_GetText(TVItemParentName, TVItemParentID)
+if TV_Get(TVItemID, "Bold")
+{
+	ChangeName(TVItemName,TVItemParentName,CurrentSaveFile,0)
+	Goto LoadSaveFile
+}
+if TVItemName = %SavedProgramName% 
+{
+	ChangeName(TVItemName,TVItemParentName,CurrentSaveFile,2)
+	Goto LoadSaveFile 
+}
+else
+{
+	ChangeName(TVItemName,TVItemParentName,CurrentSaveFile,1)
+	Goto LoadSaveFile
+}
 return
 
 DeleteProject:
@@ -270,20 +382,33 @@ if TVItemName = %SavedProgramName%
 }
 else
 {
-	DeleteTask()
+	TVItemParentID := TV_GetParent(TVItemID)
+	TV_GetText(TVItemParentName, TVItemParentID)
+	DeleteTask(TVItemParentName,TVItemName,CurrentSaveFile)
+	Goto LoadSaveFile
 }
 return
 
 NewProjectMenu:
 Gui, ProgressTracker:Default
 Gui, Treeview, MainTreeView
-IniRead, NewProjectCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewCount
+IniRead, NewProjectCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewProjectCount
+IniRead, NewTaskCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
 NewProjectCount+=1
-IniWrite, %NewProjectCount%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewCount
+NewTaskCount+=1
+IniWrite, %NewProjectCount%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewProjectCount
+IniWrite, %NewTaskCount%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
 ProjectName=New Project %NewProjectCount%
 IniRead, ProjectList, %CurrentSaveFile%, ProgramInfo, Projects
-IniWrite, %ProjectList%|%ProjectName%, %CurrentSaveFile%, ProgramInfo, Projects
-WriteNewProject(ProjectName,NewProjectCount,CurrentSaveFile)
+if TV_GetCount() = 1
+{
+	IniWrite, %ProjectName%, %CurrentSaveFile%, ProgramInfo, Projects
+}
+else
+{
+	IniWrite, %ProjectList%|%ProjectName%, %CurrentSaveFile%, ProgramInfo, Projects
+}
+WriteNewProject(ProjectName,NewTaskCount,CurrentSaveFile)
 Goto LoadSaveFile
 return
 
@@ -294,17 +419,30 @@ if A_GuiEvent = Normal
 	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 	IniRead, UpdateTitle, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%UpdateFileName%, UpdateInfo, UpdateTitle
 	IniRead, UpdateDescription, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%UpdateFileName%, UpdateContent, UpdateDescription
-	GuiControl,, UpdateTitle, %UpdateTitle%
-	GuiControl,, UpdateDescription, %UpdateDescription%
+	if UpdateTitle = ERROR
+	{
+		GuiControl,, UpdateTitle, Update Title
+		GuiControl,, UpdateDescription, Update Description
+	}
+	else
+	{
+		GuiControl,, UpdateTitle, %UpdateTitle%
+		GuiControl,, UpdateDescription, %UpdateDescription%
+	}
 }
 return
 
 TagsButton:
 return
+
 SaveUpdate:
 return
 
 F1::
+Gui, ProgressTracker:Default
+Gui, Treeview, MainTreeView
+TreeViewItemCount := TV_GetCount()
+MsgBox, %TreeViewItemCount%
 ToolTip, DevTimeTestingArea
 FormatTime, LocalTime,,M/d/yy h:mmtt
 Clipboard = %A_Now%`,%LocalTime%

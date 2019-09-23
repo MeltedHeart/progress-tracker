@@ -21,7 +21,7 @@ ProjectReminder=
 Tasks=Task1
 Task1=Task1
 TaskDescription1=A simple description. Neque porro quisquam est qui dolorem ipsum quia dolor sit amet.
-ProgressTracker1=69
+ProgressTracker1=25
 [Project2]
 ProjectTitle=Project2
 Creator=BlakCake
@@ -33,7 +33,7 @@ ProjectReminder=
 Tasks=Impsum Lorem|Its just a test dude
 Task1=Impsum Lorem
 TaskDescription1=A simple description.
-ProgressTracker1=49
+ProgressTracker1=69
 Task2=Its just a test dude
 TaskDescription2=Read the title of this task
 ProgressTracker2=75

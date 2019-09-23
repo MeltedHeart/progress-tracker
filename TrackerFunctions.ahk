@@ -1,8 +1,8 @@
 ; /// Tracker Library ///
 
-BoiBox()
+BoiBox(DebugText)
 {
-	MsgBox, BOI
+	MsgBox, BOI`n%DebugText%
 }
 
 DisableAllGui()
@@ -81,8 +81,18 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			LV_Delete()
 			GuiControl,, UpdateTitle, Update Title
 			GuiControl,, UpdateDescription, Update Description
+			GuiControl,Enable, UpdateTitle
+			GuiControl,Enable, UpdateDescription
+			GuiControl,Enable, TagsButton
+			GuiControl,Enable, SaveUpdate
+			GuiControl,Enable, ProgressAddPercent
+			GuiControl,Enable, PercentEdit
 			IniRead, ProgressBarPercent, %SaveFile%, %ParentName%, ProgressTracker%A_Index%
+			GuiControl,+Range0-100, ProgressBar
 			GuiControl,,ProgressBar, %ProgressBarPercent%
+			ProgressRange := 100 - ProgressBarPercent
+			GuiControl,, ProgressAddPercent, 0
+			GuiControl,+Range-%ProgressBarPercent%-%ProgressRange%, ProgressAddPercent
 			IniRead, SelectedTaskDescription, %SaveFile%, %ParentName%, TaskDescription%A_Index%
 			GuiControl,,MainDescriptionText, %SelectedTaskDescription%
 			IniRead, SelectedTaskTitle, %SaveFile%, %ParentName%, Task%A_Index%
@@ -112,47 +122,186 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			LV_Delete()
 			GuiControl,, UpdateTitle, Update Title
 			GuiControl,, UpdateDescription, Update Description
+			GuiControl,Disable, UpdateTitle
+			GuiControl,Disable, UpdateDescription
+			GuiControl,Disable, TagsButton
+			GuiControl,Disable, SaveUpdate
+			GuiControl,Disable, ProgressAddPercent
+			GuiControl,Disable, PercentEdit
 		}
-		;else
-		;{
-		;	LV_Delete()
-		;	GuiControl,, UpdateTitle, Update Title
-		;	GuiControl,, UpdateDescription, Update Description
-		;}
+		IniRead, ProjectList, %SaveFile%, ProgramInfo, Projects
+		IfInString, ProjectList, %Selected%
+		{
+			LV_Delete()
+			GuiControl,, UpdateTitle, Update Title
+			GuiControl,, UpdateDescription, Update Description
+			GuiControl,Disable, UpdateTitle
+			GuiControl,Disable, UpdateDescription
+			GuiControl,Disable, TagsButton
+			GuiControl,Disable, SaveUpdate
+			GuiControl,Disable, ProgressAddPercent
+			GuiControl,Disable, PercentEdit
+		}
 	}
 }
 
-ProjectLoader()
+ProjectLoader(ProjectName,SaveFile)
 {
 	LV_Delete()
 	GuiControl,, UpdateTitle, Update Title
 	GuiControl,, UpdateDescription, Update Description
+	;GuiControl,Disable, UpdateListView
+	GuiControl,Disable, UpdateTitle
+	GuiControl,Disable, UpdateDescription
+	GuiControl,Disable, TagsButton
+	GuiControl,Disable, SaveUpdate
+	GuiControl,Disable, ProgressAddPercent
+	GuiControl,Disable, PercentEdit
+	IniRead, TaskList, %SaveFile%, %ProjectName%, Tasks
+	Loop, Parse, TaskList, `|
+	{
+		TaskAmount = %A_Index%
+	}
+	TaskProgressTotalRange := (TaskAmount*100)
+	;ProgressSum = 0
+	Loop, Parse, TaskList, `|
+	{
+		IniRead, TaskProgress, %SaveFile%, %ProjectName%, ProgressTracker%A_Index%
+		ProgressSum += %TaskProgress%
+	}
+	GuiControl,+Range0-%TaskProgressTotalRange%, ProgressBar
+	GuiControl,, ProgressBar, %ProgressSum%
 }
 
 DeleteProject(ProjectName,SaveFile)
 {
-	; \\ Placeholder
 	IniRead, ProjectList, %SaveFile%, ProgramInfo, Projects
 	PipeProjectName=|%ProjectName%
 	StringReplace, ProjectList, ProjectList, %PipeProjectName%,, All
+	if ErrorLevel = 1
+	{
+		ProjectNamePipe=%ProjectName%|
+		StringReplace, ProjectList, ProjectList, %ProjectNamePipe%,, All
+		if ErrorLevel = 1
+		{
+			StringReplace, ProjectList, ProjectList, %ProjectName%,, All
+		}
+	}
 	IniWrite, %ProjectList%, %SaveFile%, ProgramInfo, Projects
 	IniDelete, %SaveFile%,%ProjectName%
 }
 
-DeleteTask()
+DeleteTask(ProjectName,TaskName,SaveFile)
 {
-	; \\ Placeholder
+	IniRead, TaskList, %SaveFile%, %ProjectName%, Tasks
+	Loop, Parse, TaskList, `|
+	{
+		TaskAmount = %A_Index%
+	}
+	if TaskAmount = 1
+	{
+		MsgBox 16, Warning, You cannot delete this task!`nA Project cannot be empty, please create a new task before deleting this one
+		return
+	}
+	else
+	{
+		Loop, Parse, TaskList, `|
+		{
+			if A_LoopField = %TaskName%
+			{
+				PipeTaskName=|%TaskName%
+				StringReplace, TaskList, TaskList, %PipeTaskName%
+				if ErrorLevel = 1
+				{
+					TaskNamePipe = %TaskName%|
+					StringReplace, TaskList, TaskList, %TaskNamePipe%
+					if ErrorLevel = 1
+					{
+						StringReplace, TaskList, TaskList, %TaskName%
+					}
+				}
+				IniWrite, %TaskList%, %SaveFile%, %ProjectName%, Tasks
+				TaskNum = %A_Index%
+				IniDelete, %SaveFile%,%ProjectName%, Task%TaskNum%
+				IniDelete, %SaveFile%,%ProjectName%, TaskDescription%TaskNum%
+				IniDelete, %SaveFile%,%ProjectName%, ProgressTracker%TaskNum%
+			}
+		}
+	}
 }
 
-CreateTempFile(WhereToSave)
+CreateNewFile(FileName,WhereToSave)
 {
 	FileDelete,  %A_temp%\ProgressTracker\New_File.ptp
-	FormatTime, Localtiem, ,ShortDate
-	FileAppend ,[ProgramInfo]`nProgramName=New Program`nCreator=`nCreatorVersion=`nProjects=`n[Program1]`nCreator=`nDate=%Localtiem%`nLastChange=`nProjectDescription=,%A_temp%\ProgressTracker\New_File.ptp
+	FileCreateDir, %WhereToSave%\%FileName%
+	FileCreateDir, %WhereToSave%\%FileName%\Notes
+	FileCreateDir, %WhereToSave%\%FileName%\Reminders
+	FileCreateDir, %WhereToSave%\%FileName%\Updates
+	FormatTime, LocalTime, ,ShortDate
+	FileAppend ,[ProgramInfo]`nProgramName=New Program`nCreator=%A_UserName%`nCreatorVersion=`nProjects=`n[New Program]`nProjectTitle=New Program`nProjectDescription=You can change this name/description by left clicking on this Program`nCreator=`nDate=%LocalTime%`nLastChange=`nProjectDescription=You can change this name/description by left clicking on this Program,%WhereToSave%\%FileName%\%FileName%.ptp
 }	
 
-WriteNewProject(ProjectName,Count,SaveFile)
+WriteNewProject(ProjectName,TaskCount,SaveFile)
 {
 	FormatTime, LocalTime,,ShortDate
-	FileAppend,`n[%ProjectName%]`nProjectTitle=%ProjectName%`nCreator=%A_User%`nDate=%LocalTime%`nLastChange=%LocalTime%`nProjectDescription=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProjectNotes=`nProjectReminder=`nTasks= New Task %Count%`nTask%Count%=New Task %Count%`nTaskDescription1=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProgressTracker1=0,%SaveFile%
+	FileAppend,`n[%ProjectName%]`nProjectTitle=%ProjectName%`nCreator=%A_User%`nDate=%LocalTime%`nLastChange=%LocalTime%`nProjectDescription=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProjectNotes=`nProjectReminder=`nTasks= New Task %TaskCount%`nTask1=New Task %TaskCount%`nTaskDescription1=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProgressTracker1=0,%SaveFile%
+}
+
+WriteNewTask(TaskName,ProjectName,SaveFile) 
+{
+	IniRead, TaskList, %SaveFile%, %ProjectName%, Tasks
+	Loop, Parse, TaskList, `|
+	{
+		TaskAmount = %A_Index%
+	}
+	;TaskAmount +=1
+	IniWrite, %TaskName%, %SaveFile%, %ProjectName%, Task%TaskAmount%
+	IniWrite, You can change this name/description by left clicking on this task, %SaveFile%, %ProjectName%, TaskDescription%TaskAmount%
+	IniWrite, 0, %SaveFile%, %ProjectName%, ProgressTracker%TaskAmount%
+}
+
+ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
+{
+	InputBox, NewItemName, Change Name, Choose a new name for this item,,250,125
+	if ErrorLevel = 1
+	{
+		return
+	}
+	if NewItemName =
+	{
+		MsgBox 16, Warning, Item Name cannot be empty!
+		return
+	}
+	if ProjectOrTask = 1
+	{
+		IniRead, TaskList, %SaveFile%, %ProjectName%, Tasks
+		Loop, Parse, TaskList, `|
+		{
+			if A_LoopField = %SelectedItem%
+			{
+				TaskNumber = %A_Index%
+				IniWrite, %NewItemName%, %SaveFile%, %ProjectName%, Task%TaskNumber%
+			}
+		}
+		StringReplace, TaskList, TaskList, %SelectedItem%, %NewItemName%
+		IniWrite, %TaskList%, %SaveFile%, %ProjectName%, Tasks
+	}
+	if ProjectOrTask = 0
+	{
+		IniRead, ProjectList, %SaveFile%, ProgramInfo, Projects
+		StringReplace, ProjectList, ProjectList, %SelectedItem%, %NewItemName%
+		IniWrite, %ProjectList%, %SaveFile%, ProgramInfo, Projects
+		FileRead, SaveFileString, %SaveFile%
+		StringReplace, SaveFileString, SaveFileString, %SelectedItem%, %NewItemName%
+		FileDelete, %SaveFile%
+		FileAppend, %SaveFileString%, %SaveFile%
+		IniWrite, %NewItemName%, %SaveFile%, %NewItemName%, ProjectTitle
+	}
+	if ProjectOrTask = 2
+	{
+		IniWrite, %NewItemName%, %SaveFile%, ProgramInfo , ProgramName
+		FileRead, SaveFileString, %SaveFile%
+		StringReplace, SaveFileString, SaveFileString, %SelectedItem%, %NewItemName%
+		IniWrite, %NewItemName%, %SaveFile%, %NewItemName%, ProjectTitle
+	}
 }
