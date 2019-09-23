@@ -141,6 +141,7 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			GuiControl,Disable, SaveUpdate
 			GuiControl,Disable, ProgressAddPercent
 			GuiControl,Disable, PercentEdit
+			GuiControl,,ProgressBar, 0
 		}
 	}
 }
@@ -304,4 +305,13 @@ ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 		StringReplace, SaveFileString, SaveFileString, %SelectedItem%, %NewItemName%
 		IniWrite, %NewItemName%, %SaveFile%, %NewItemName%, ProjectTitle
 	}
+}
+
+WriteUpdate(Title,Description,Tags,SaveFile)
+{
+	IniWrite, %Title%, %SaveFile%, UpdateInfo, UpdateTitle
+	IniWrite, %A_Now%, %SaveFile%, UpdateInfo, UpdateTime
+	IniWrite, %A_User%, %SaveFile%, UpdateInfo, UpdateUser
+	IniWrite, %Tags%, %SaveFile%, UpdateInfo, UpdateTags
+	IniWrite, %Description%, %SaveFile%, UpdateContent, UpdateDescription
 }

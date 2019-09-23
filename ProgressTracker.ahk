@@ -436,6 +436,41 @@ TagsButton:
 return
 
 SaveUpdate:
+gui, Submit, NoHide
+IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+FormatTime, LocalTime,,M/d/yy h:mmtt
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+TVItemParentID := TV_GetParent(TVItemID)
+TV_GetText(TVItemParentName, TVItemParentID)
+if UpdateTitle =
+{
+	MsgBox 16, Warning, Update Name cannot be empty!
+	return
+}
+if UpdateDescription =
+{
+	MsgBox 16, Warning, Update Description cannot be empty!
+	return
+}
+StringLower, TVItemName, TVItemName
+BonelessItemName := StrReplace(TVItemName,"",,0)
+CurrentUpdateCount := LV_GetCount()
+CurrentUpdateCount += 1
+UpdateFile = %BonelessItemName%-up%CurrentUpdateCount%.ptu
+FullUpdateFile=%MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%BonelessItemName%-up%CurrentUpdateCount%.ptu
+FileAppend, %UpdateTitle%`, %ProgressAddPercent%`, %A_Now%`, %LocalTime%`, %UpdateFile%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TVItemName%.ptl
+IniRead, TaskList, %CurrentSaveFile%, %TVItemParentName%, Tasks
+Loop, Parse, TaskList, `|
+{
+	if A_LoopField = %TVItemName%
+	{
+		TaskNumber = %A_Index%
+	}
+}
+IniWrite, %ProgressAddPercent%, %CurrentSaveFile%, %TVItemParentName%, ProgressTracker%TaskNumber%
+WriteUpdate(UpdateTitle,UpdateDescription,UpdateTags,FullUpdateFile)
+;RefreshUpdateList()
 return
 
 F1::
