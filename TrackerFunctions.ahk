@@ -128,6 +128,7 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			GuiControl,Disable, SaveUpdate
 			GuiControl,Disable, ProgressAddPercent
 			GuiControl,Disable, PercentEdit
+			GuiControl,,ProgressBar, 0
 		}
 		IniRead, ProjectList, %SaveFile%, ProgramInfo, Projects
 		IfInString, ProjectList, %Selected%

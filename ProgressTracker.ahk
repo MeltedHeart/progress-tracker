@@ -182,7 +182,7 @@ OpenReminderMenu:
 return
 
 MenuAbout:
-MsgBox, %Codename%`nhttps://github.com/MeltedHeart/progress-tracker
+MsgBox,,About,%Codename%`nhttps://github.com/MeltedHeart/progress-tracker
 return
 
 MainTreeView:
@@ -471,10 +471,15 @@ Loop, Parse, TaskList, `|
 		TaskNumber = %A_Index%
 	}
 }
-IniWrite, %ProgressAddPercent%, %CurrentSaveFile%, %TVItemParentName%, ProgressTracker%TaskNumber%
+IniRead, CurrentProgress, %CurrentSaveFile%, %TVItemParentName%, ProgressTracker%TaskNumber%
+TotalProgress := CurrentProgress + ProgressAddPercent
+;MsgBox, %CurrentProgress% %ProgressAddPercent% %TotalProgress%
+IniWrite, %TotalProgress%, %CurrentSaveFile%, %TVItemParentName%, ProgressTracker%TaskNumber%
 WriteUpdate(UpdateTitle,UpdateDescription,UpdateTags,FullUpdateFile)
 Sleep 250
 RefreshUpdateList(SavedProgramName,TVItemParentName,CurrentSaveFile)
+TV_Modify(TVItemID, Select)
+GuiControl,,ProgressBar, %TotalProgress%
 return
 
 F1::
