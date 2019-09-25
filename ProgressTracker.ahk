@@ -413,13 +413,15 @@ Goto LoadSaveFile
 return
 
 UpdateListView:
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
 if A_GuiEvent = Normal
 {
 	LV_GetText(UpdateFileIni,A_EventInfo,5)
 	UpdateFileName=%UpdateFileIni%
 	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
-	IniRead, UpdateTitle, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%UpdateFileName%, UpdateInfo, UpdateTitle
-	IniRead, UpdateDescription, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%UpdateFileName%, UpdateContent, UpdateDescription
+	IniRead, UpdateTitle, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TVItemName%\%UpdateFileName%, UpdateInfo, UpdateTitle
+	IniRead, UpdateDescription, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TVItemName%\%UpdateFileName%, UpdateContent, UpdateDescription
 	;MsgBox, %UpdateFileIni% %UpdateFileName% %UpdateTitle% %UpdateDescription% %SavedProgramName%
 	if UpdateTitle = ERROR
 	{
@@ -428,8 +430,8 @@ if A_GuiEvent = Normal
 	}
 	else
 	{
-	GuiControl,, UpdateTitle, %UpdateTitle%
-	GuiControl,, UpdateDescription, %UpdateDescription%
+		GuiControl,, UpdateTitle, %UpdateTitle%
+		GuiControl,, UpdateDescription, %UpdateDescription%
 	}
 }
 return
@@ -456,12 +458,11 @@ if UpdateDescription =
 	MsgBox 16, Warning, Update Description cannot be empty!
 	return
 }
-StringLower, TVItemName, TVItemName
 BonelessItemName := StrReplace(TVItemName,"","",0)
 CurrentUpdateCount := LV_GetCount()
 CurrentUpdateCount += 1
-UpdateFile = %BonelessItemName%-up%CurrentUpdateCount%.ptu
-FullUpdateFile=%A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%BonelessItemName%-up%CurrentUpdateCount%.ptu
+UpdateFile = up%CurrentUpdateCount%.ptu
+FullUpdateFile=%A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TVItemName%\up%CurrentUpdateCount%.ptu
 FileAppend, %UpdateTitle%`, %ProgressAddPercent%`, %A_Now%`, %LocalTime%`, %UpdateFile%`n, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TVItemName%.ptl
 IniRead, TaskList, %CurrentSaveFile%, %TVItemParentName%, Tasks
 Loop, Parse, TaskList, `|
@@ -475,9 +476,10 @@ IniRead, CurrentProgress, %CurrentSaveFile%, %TVItemParentName%, ProgressTracker
 TotalProgress := CurrentProgress + ProgressAddPercent
 ;MsgBox, %CurrentProgress% %ProgressAddPercent% %TotalProgress%
 IniWrite, %TotalProgress%, %CurrentSaveFile%, %TVItemParentName%, ProgressTracker%TaskNumber%
+FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TVItemName%
 WriteUpdate(UpdateTitle,UpdateDescription,UpdateTags,FullUpdateFile)
 Sleep 250
-RefreshUpdateList(SavedProgramName,TVItemParentName,CurrentSaveFile)
+RefreshUpdateList(TVItemName,SavedProgramName,TVItemParentName,CurrentSaveFile)
 TV_Modify(TVItemID, Select)
 GuiControl,,ProgressBar, %TotalProgress%
 return

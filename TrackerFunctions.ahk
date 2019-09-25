@@ -142,7 +142,6 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			GuiControl,Disable, SaveUpdate
 			GuiControl,Disable, ProgressAddPercent
 			GuiControl,Disable, PercentEdit
-			GuiControl,,ProgressBar, 0
 		}
 	}
 }
@@ -165,7 +164,6 @@ ProjectLoader(ProjectName,SaveFile)
 		TaskAmount = %A_Index%
 	}
 	TaskProgressTotalRange := (TaskAmount*100)
-	;ProgressSum = 0
 	Loop, Parse, TaskList, `|
 	{
 		IniRead, TaskProgress, %SaveFile%, %ProjectName%, ProgressTracker%A_Index%
@@ -287,6 +285,10 @@ ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 		}
 		StringReplace, TaskList, TaskList, %SelectedItem%, %NewItemName%
 		IniWrite, %TaskList%, %SaveFile%, %ProjectName%, Tasks
+		IniRead, SavedProgramName, %SaveFile%, ProgramInfo, ProgramName
+		FileMove, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedItem%.ptl, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%NewItemName%.ptl, 1
+		FileMoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedItem%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%NewItemName%, R
+		
 	}
 	if ProjectOrTask = 0
 	{
@@ -310,7 +312,7 @@ ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 
 WriteUpdate(Title,Description,Tags,SaveFile)
 {
-	global
+	;global
 	IniWrite, %Title%, %SaveFile%, UpdateInfo, UpdateTitle
 	IniWrite, %A_Now%, %SaveFile%, UpdateInfo, UpdateTime
 	IniWrite, A_User, %SaveFile%, UpdateInfo, UpdateUser
@@ -318,7 +320,7 @@ WriteUpdate(Title,Description,Tags,SaveFile)
 	IniWrite, %Description%, %SaveFile%, UpdateContent, UpdateDescription
 }
 
-RefreshUpdateList(SavedProgramName,ParentName,SaveFile)
+RefreshUpdateList(Selected,SavedProgramName,ParentName,SaveFile)
 {
 	IniRead, TaskList, %SaveFile%, %ParentName%, Tasks
 	Loop, Parse, TaskList, `|
@@ -326,7 +328,7 @@ RefreshUpdateList(SavedProgramName,ParentName,SaveFile)
 		TaskAmount = %A_Index%
 	}
 	IniRead, SelectedTaskTitle, %SaveFile%, %ParentName%, Task%TaskAmount%
-	UpdateListPath=%A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedTaskTitle%.ptl
+	UpdateListPath=%A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%Selected%.ptl
 	CSV_Load(UpdateListPath,"UpdateListCSV",",")
 	UpdateAmount:=CSV_TotalRows("UpdateListCSV")
 	LV_Delete()
