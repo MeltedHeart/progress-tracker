@@ -51,31 +51,37 @@ Menu, FileMenu, Add, Settings, MenuSettings
 Menu, FileMenu, Add
 Menu, FileMenu, Add, E&xit, GuiClose
 
-Menu, NotesMenu, Add, Create a note, CreateNote
-Menu, NotesMenu, Add, Open a note, OpenNoteMenu
+Menu, NotesMenu, Add, Create a Note, CreateNote
+Menu, NotesMenu, Add, View Notes, OpenNoteMenu
 
 Menu, RemindersMenu, Add, Create a Reminder, CreateReminder
 Menu, RemindersMenu, Add, View Reminders, OpenReminderMenu
+
+Menu, OtherMenu, Add, Save a Link, SaveLink
+Menu, OtherMenu, Add, Attach a File, AttachFile
 
 Menu, HelpMenu, Add, About, MenuAbout
 
 Menu, MainMenuBar, Add, &File, :FileMenu
 Menu, MainMenuBar, Add, &Notes, :NotesMenu
 Menu, MainMenuBar, Add, &Reminders, :RemindersMenu
+Menu, MainMenuBar, Add, &Other, :OtherMenu
 Menu, MainMenuBar, Add, &Help, :HelpMenu
 
 Gui, Menu, MainMenuBar
 
-Gui, Add, TreeView, gMainTreeView vMainTreeView AltSubmit w240 r20
+Gui, Add, TreeView, gMainTreeView vMainTreeView AltSubmit w240 r24
 Gui, Add, Tab3, vDescriptionBox x13 w240 h200, Description|Properties
 Gui, Add, Text,vMainDescriptionText w220 h125 , Click on an item to view more
 Gui, Tab, 2
 Gui, Add, Text,vMainPropertiesText w220 h125 , Click on an item to view more
 Gui, Tab
-Gui, Add, Tab3,+hide vTaskBox x265 y8 w610 h572, Info
+Gui, Add, Tab3,+hide vTaskBox x265 y8 w610 h645, Info
 Gui, Add, GroupBox, w580 h100, Current Progress
 Gui, Add, GroupBox, w580 h258, Updates
-Gui, Add, GroupBox, w580 h155, Notes and Reminders
+Gui, Add, GroupBox, w190 h225, Notes
+Gui, Add, GroupBox, x475 y415 w190 h225, Reminders
+Gui, Add, GroupBox, x670 y415 w190 h225, Other
 Gui, Add, Progress, vProgressBar x300 y70 w540 h50, 1
 Gui, Font, s9
 Gui, Add, ListView, gUpdateListView vUpdateListView AltSubmit x290 y170 w210 h225, Title|`%|UCT|Date|File
@@ -93,6 +99,13 @@ Gui, Add, UpDown, vProgressAddPercent Range-100-100, 1
 Gui, Add, Text,x622 y370, `%
 Gui, Add, Button,x700 y366 vTagsButton gTagsButton, Tags
 Gui, Add, Button,x750 y366 vSaveUpdate gSaveUpdate , Save Update
+Gui, Add, ListBox, gNotesListBox vNotesListBox x291 y435 w170 r12
+Gui, Add, ListBox, gReminderListBox vReminderListBox x485 y435 w170 r12
+Gui, Add, ListBox, gOtherListBox vOtherListBox x680 y435 w170 r12
+Gui, Add, StatusBar,,
+SB_SetParts(500,400)
+SB_SetText("Upcoming Reminder:", 1)
+SB_SetText("Upcoming Deadline:", 2)
 Gui, Tab
 
 Gui, Show
@@ -102,6 +115,8 @@ return
 MenuFileNew:
 GuiControl,,ProgressBar, 0
 IniRead,LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
+DisableAllGui()
+DisableAllMenus()
 MsgBox,52,Confirm,  All progress that has not been saved will be lost `, Are you sure?
 IfMsgBox Yes
 {
@@ -120,6 +135,11 @@ IfMsgBox Yes
 	CurrentSaveFile=%A_MyDocuments%\ProgressTracker\ProgramData\%NewFileName%\%NewFileName%.ptp
 	Temp_File=1
 	Goto LoadSaveFile
+}
+else
+{
+	EnableAllGui()
+	EnableAllMenus()
 }
 return
 
@@ -180,12 +200,22 @@ CreateReminder:
 return
 OpenReminderMenu:
 return
+SaveLink:
+return
+AttachFile:
+return
 
 MenuAbout:
+DisableAllGui()
+DisableAllMenus()
 MsgBox,,About,%Codename%`nhttps://github.com/MeltedHeart/progress-tracker
+EnableAllGui()
+EnableAllMenus()
 return
 
 MainTreeView:
+SelectedTVItemID := TV_GetSelection()
+TV_GetText(TVItemName,SelectedTVItemID)
 If A_GuiEvent = RightClick
 {
 	if A_EventInfo = 0
@@ -202,6 +232,14 @@ If A_GuiEvent = RightClick
 		Menu, ContextEditProjectMenu, Add, Delete , DeleteProject
 		Menu, ContextEditProjectMenu ,Show
 		return
+	}
+	if TVItemName = %SavedProgramName%
+	{
+		Menu , ContextEditProgramMenu , Add , New Project , NewProjectMenu
+		Menu , ContextEditProgramMenu , Add , Change Name , ChangeName
+		Menu , ContextEditProgramMenu , Add , Change Description , ChangeDescription
+		Menu , ContextEditProgramMenu , Add , Delete , DeleteProject
+		Menu , ContextEditProgramMenu , Show
 	}
 	else
 	{
@@ -494,6 +532,13 @@ FormatTime, LocalTime,,M/d/yy h:mmtt
 Clipboard = %A_Now%`,%LocalTime%
 MsgBox, %A_Now%
 ToolTip, 
+return
+
+NotesListBox:
+return
+ReminderListBox:
+return
+OtherListBox:
 return
 
 GuiClose:

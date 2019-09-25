@@ -237,6 +237,7 @@ CreateNewFile(FileName,WhereToSave)
 	FileCreateDir, %WhereToSave%\%FileName%\Notes
 	FileCreateDir, %WhereToSave%\%FileName%\Reminders
 	FileCreateDir, %WhereToSave%\%FileName%\Updates
+	FileCreateDir, %WhereToSave%\%FileName%\Files
 	FormatTime, LocalTime, ,ShortDate
 	FileAppend ,[ProgramInfo]`nProgramName=%FileName%`nCreator=%A_UserName%`nCreatorVersion=`nProjects=`n[%FileName%]`nProjectTitle=%FileName%]`nProjectDescription=You can change this name/description by left clicking on this Program`nCreator=`nDate=%LocalTime%`nLastChange=`nProjectDescription=You can change this name/description by left clicking on this Program,%WhereToSave%\%FileName%\%FileName%.ptp
 }	
@@ -258,6 +259,8 @@ WriteNewTask(TaskName,ProjectName,SaveFile)
 	IniWrite, %TaskName%, %SaveFile%, %ProjectName%, Task%TaskAmount%
 	IniWrite, You can change this name/description by left clicking on this task, %SaveFile%, %ProjectName%, TaskDescription%TaskAmount%
 	IniWrite, 0, %SaveFile%, %ProjectName%, ProgressTracker%TaskAmount%
+	IniRead, SavedProgramName, %SaveFile%, ProgramInfo, ProgramName
+	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TaskName%
 }
 
 ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
