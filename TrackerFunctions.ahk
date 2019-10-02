@@ -275,6 +275,7 @@ WriteNewTask(TaskName,ProjectName,SaveFile)
 
 ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 {
+	FormatTime, LocalTime,,ShortDate
 	InputBox, NewItemName, Change Name, Choose a new name for this item,,250,125
 	if ErrorLevel = 1
 	{
@@ -301,7 +302,7 @@ ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 		IniRead, SavedProgramName, %SaveFile%, ProgramInfo, ProgramName
 		FileMove, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedItem%.ptl, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%NewItemName%.ptl, 1
 		FileMoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedItem%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%NewItemName%, R
-		
+		IniWrite, %LocalTime%, %SaveFile%, %ProjectName%, LastChange
 	}
 	if ProjectOrTask = 0
 	{
@@ -313,6 +314,7 @@ ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 		FileDelete, %SaveFile%
 		FileAppend, %SaveFileString%, %SaveFile%
 		IniWrite, %NewItemName%, %SaveFile%, %NewItemName%, ProjectTitle
+		IniWrite, %LocalTime%, %SaveFile%, %NewItemName%, LastChange
 	}
 	if ProjectOrTask = 2
 	{
@@ -320,6 +322,7 @@ ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 		FileRead, SaveFileString, %SaveFile%
 		StringReplace, SaveFileString, SaveFileString, %SelectedItem%, %NewItemName%
 		IniWrite, %NewItemName%, %SaveFile%, %NewItemName%, ProjectTitle
+		IniWrite, %LocalTime%, %SaveFile%, %NewItemName%, LastChange
 	}
 }
 
@@ -330,6 +333,7 @@ WriteUpdate(Title,Description,Tags,SaveFile)
 	IniWrite, %A_Now%, %SaveFile%, UpdateInfo, UpdateTime
 	IniWrite, A_User, %SaveFile%, UpdateInfo, UpdateUser
 	IniWrite, %Tags%, %SaveFile%, UpdateInfo, UpdateTags
+	StringReplace, Description, Description, `n, |, All
 	IniWrite, %Description%, %SaveFile%, UpdateContent, UpdateDescription
 }
 

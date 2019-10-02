@@ -3,6 +3,7 @@ Codename=ProgressTracker
 CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
 Temp_File=0 ; Check to see if the current file is a temp file
 SaveLocation=%A_MyDocuments%\ProgressTracker\ProgramData ; Default save location
+FormatTime, LocalTime,,ShortDate
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ;#Warn  ; Enable warnings to assist with detecting common errors.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -45,20 +46,21 @@ Gui, Font, s11
 
 Menu, FileMenu, Add, &New Program`tCtrl+N, MenuFileNew
 Menu, FileMenu, Add, &Open Program`tCtrl+O, MenuFileOpen
-Menu, FileMenu, Add, Save Program As, MenuFileSaveAs
+Menu, FileMenu, Add, Save Program &As, MenuFileSaveAs
 Menu, FileMenu, Add
-Menu, FileMenu, Add, Settings, MenuSettings
+Menu, FileMenu, Add, &Settings, MenuSettings
 Menu, FileMenu, Add
 Menu, FileMenu, Add, E&xit, GuiClose
 
-Menu, NotesMenu, Add, Create a Note, CreateNote
-Menu, NotesMenu, Add, View Notes, OpenNoteMenu
+Menu, NotesMenu, Add, &Create a Note, CreateNote
+Menu, NotesMenu, Add, &View Notes, OpenNoteMenu
 
-Menu, RemindersMenu, Add, Create a Reminder, CreateReminder
-Menu, RemindersMenu, Add, View Reminders, OpenReminderMenu
+Menu, RemindersMenu, Add, &Create a Reminder, CreateReminder
+Menu, RemindersMenu, Add, &View Reminders, OpenReminderMenu
 
-Menu, OtherMenu, Add, Save a Link, SaveLink
-Menu, OtherMenu, Add, Attach a File, AttachFile
+Menu, OtherMenu, Add, Save a &Link`tCtrl+L, SaveLink
+Menu, OtherMenu, Add, Attach a &File`tCtrl+F, AttachFile
+Menu, OtherMenu, Add, Open Tags Menu, OpenTags
 
 Menu, HelpMenu, Add, About, MenuAbout
 
@@ -203,6 +205,8 @@ return
 SaveLink:
 return
 AttachFile:
+return
+OpenTags:
 return
 
 MenuAbout:
@@ -353,6 +357,7 @@ TV_GetText(TVItemName, TVItemID)
 TVItemParentID := TV_GetParent(TVItemID)
 TV_GetText(TVItemParentName, TVItemParentID)
 IniWrite, %ProjectDescriptionText%, %CurrentSaveFile%, %TVItemName%, ProjectDescription
+IniWrite, %LocalTime%, %CurrentSaveFile%, %TVItemName%, LastChange
 Sleep 100
 TV_Modify(TVItemID, Select)
 return
@@ -364,6 +369,7 @@ TV_GetText(TVItemName, TVItemID)
 TVItemParentID := TV_GetParent(TVItemID)
 TV_GetText(TVItemParentName, TVItemParentID)
 IniWrite, %ProgramDescriptionText%, %CurrentSaveFile%, %TVItemName%, ProjectDescription
+IniWrite, %LocalTime%, %CurrentSaveFile%, %TVItemName%, LastChange
 Sleep 100
 TV_Modify(TVItemID, Select)
 return
@@ -375,6 +381,7 @@ TV_GetText(TVItemName, TVItemID)
 TVItemParentID := TV_GetParent(TVItemID)
 TV_GetText(TVItemParentName, TVItemParentID)
 IniWrite, %TaskDescriptionText%, %CurrentSaveFile%, %TVItemParentName%, TaskDescription%TaskNumber%
+IniWrite, %LocalTime%, %CurrentSaveFile%, %TVItemParentName%, LastChange
 Sleep 100
 TV_Modify(TVItemID, Select)
 return
@@ -460,6 +467,7 @@ if A_GuiEvent = Normal
 	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 	IniRead, UpdateTitle, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TVItemName%\%UpdateFileName%, UpdateInfo, UpdateTitle
 	IniRead, UpdateDescription, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TVItemName%\%UpdateFileName%, UpdateContent, UpdateDescription
+	StringReplace, UpdateDescription, UpdateDescription, |, `n, All
 	;MsgBox, %UpdateFileIni% %UpdateFileName% %UpdateTitle% %UpdateDescription% %SavedProgramName%
 	if UpdateTitle = ERROR
 	{
@@ -475,7 +483,20 @@ if A_GuiEvent = Normal
 return
 
 TagsButton:
-return
+gui, TagSelector:New, ToolWindow, Tag Selector
+gui, Add, Text,, Select the tag(s) for this update:
+gui, Add, ListView, w150 r10, Tags
+gui, Add, Button, w25 gAddTag, +
+gui, Add, Button, Default x35 y229 w125 gSaveSelectedTags, OK
+gui, Show
+Return
+
+AddTag:
+Return
+
+SaveSelectedTags:
+gui, Submit, NoHide
+Return
 
 SaveUpdate:
 gui, Submit, NoHide
@@ -518,20 +539,9 @@ FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Up
 WriteUpdate(UpdateTitle,UpdateDescription,UpdateTags,FullUpdateFile)
 Sleep 250
 RefreshUpdateList(TVItemName,SavedProgramName,TVItemParentName,CurrentSaveFile)
+IniWrite, %LocalTime%, %CurrentSaveFile%, %TVItemParentName%, LastChange
 TV_Modify(TVItemID, Select)
 GuiControl,,ProgressBar, %TotalProgress%
-return
-
-F1::
-Gui, ProgressTracker:Default
-Gui, Treeview, MainTreeView
-TreeViewItemCount := TV_GetCount()
-MsgBox, %TreeViewItemCount%
-ToolTip, DevTimeTestingArea
-FormatTime, LocalTime,,M/d/yy h:mmtt
-Clipboard = %A_Now%`,%LocalTime%
-MsgBox, %A_Now%
-ToolTip, 
 return
 
 NotesListBox:
@@ -540,6 +550,17 @@ ReminderListBox:
 return
 OtherListBox:
 return
+
+ProgressTrackerGuiClose:
+MsgBox 52, Warning, All progress that has not been saved will be lost. `nAre you sure?
+IfMsgBox No
+{
+	return
+}
+else
+{
+	ExitApp
+}
 
 GuiClose:
 MsgBox 52, Warning, All progress that has not been saved will be lost. `nAre you sure?
