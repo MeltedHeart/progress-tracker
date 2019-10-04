@@ -493,7 +493,7 @@ gui, Add, Button, w25 gAddTag, +
 gui, Add, Button, Default x35 y219 w125 gSaveSelectedTags, OK
 LoadTags(TagFilePath)
 gui, Show
-Return
+return
 
 SelectTagListView:
 ;if A_GuiEvent = I
@@ -503,7 +503,9 @@ SelectTagListView:
 return
 
 AddTag:
-Return
+AddNewTag(TagFilePath)
+LoadTags(TagFilePath)
+return
 
 SaveSelectedTags:
 gui, Submit
@@ -531,7 +533,7 @@ Loop,
 		FileAppend, |%RowText%, %A_Temp%\ProgressTracker\stags.temp
 	}
 }
-Return
+return
 
 SaveUpdate:
 gui, Submit, NoHide

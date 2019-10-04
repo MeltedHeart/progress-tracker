@@ -364,12 +364,30 @@ RefreshUpdateList(Selected,SavedProgramName,ParentName,SaveFile)
 
 LoadTags(TagFile)
 {
+	LV_Delete()
 	IniRead, TagList, %TagFile%, TagInfo, Tags
 	Loop, Parse, TagList, `|
 	{
 		TaskAmount = %A_Index%
 		LV_Add("-Check",A_LoopField)
 	}
+}
+
+AddNewTag(TagFile)
+{
+	InputBox, NewTagName, Add a new tag, Choose a name for the new tag`nAvoid using any special character(s),,240,140
+	if ErrorLevel = 1
+	{
+		return
+	}
+	if NewTagName =
+	{
+		MsgBox 16, Warning, Item Name cannot be empty!
+		return
+	}
+	StringReplace, NewTagName, NewTagName,`n,-
+	IniRead, CurrentTags, %TagFile%, TagInfo, Tags
+	IniWrite, %CurrentTags%|%NewTagName%, %TagFile%, TagInfo, Tags
 }
 
 AddToTagDir(TagToAdd,ParentName,ItemName,TagFile,TagHolder)
