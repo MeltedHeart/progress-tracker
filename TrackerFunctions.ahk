@@ -397,7 +397,7 @@ AddToTagDir(TagToAdd,ParentName,ItemName,TagFile,TagHolder)
 	if TagHolder = 2
 	{
 		IniRead, TagNoteList, %TagFile%, Tag%TagNum%, notes
-		if TagNoteList = ERROR
+		if (TagNoteList ="")
 		{
 			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, notes
 		}
@@ -409,7 +409,7 @@ AddToTagDir(TagToAdd,ParentName,ItemName,TagFile,TagHolder)
 	if TagHolder = 3
 	{
 		IniRead, TagReminderList, %TagFile%, Tag%TagNum%, reminders
-		if TagReminderList = ERROR
+		if (TagReminderList ="")
 		{
 			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, reminders
 		}
@@ -421,7 +421,7 @@ AddToTagDir(TagToAdd,ParentName,ItemName,TagFile,TagHolder)
 	if TagHolder = 4
 	{
 		IniRead, TagOtherList, %TagFile%, Tag%TagNum%, others
-		if TagOtherList = ERROR
+		if (TagOtherList ="")
 		{
 			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, others
 		}
