@@ -42,12 +42,18 @@ EnableUpdateGui()
 DisableAllMenus()
 {
 	Menu, MainMenuBar, Disable, &File
+	Menu, MainMenuBar, Disable, &Notes
+	Menu, MainMenuBar, Disable, &Reminders
+	Menu, MainMenuBar, Disable, &Other
 	Menu, MainMenuBar, Disable, &Help
 }
 
 EnableAllMenus()
 {
 	Menu, MainMenuBar, Enable, &File
+	Menu, MainMenuBar, Enable, &Notes
+	Menu, MainMenuBar, Enable, &Reminders
+	Menu, MainMenuBar, Enable, &Other
 	Menu, MainMenuBar, Enable, &Help
 }
 
