@@ -3,6 +3,7 @@ Codename=ProgressTracker
 CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
 Temp_File=0 ; Check to see if the current file is a temp file
 SaveLocation=%A_MyDocuments%\ProgressTracker\ProgramData ; Default save location
+TagFilePath=%A_MyDocuments%\ProgressTracker\ProgramData\Tags.ptl ; Default location of tag list file, this could be changed to a variable so the user can have multiple tag lists or load one from another user
 FormatTime, LocalTime,,ShortDate
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ;#Warn  ; Enable warnings to assist with detecting common errors.
@@ -485,17 +486,51 @@ return
 TagsButton:
 gui, TagSelector:New, ToolWindow, Tag Selector
 gui, Add, Text,, Select the tag(s) for this update:
-gui, Add, ListView, w150 r10, Tags
+Gui, Font, s11
+gui, Add, ListView, AltSubmit gSelectTagListView Checked w150 r8, Tag Name
+Gui, Font
 gui, Add, Button, w25 gAddTag, +
-gui, Add, Button, Default x35 y229 w125 gSaveSelectedTags, OK
+gui, Add, Button, Default x35 y219 w125 gSaveSelectedTags, OK
+LoadTags(TagFilePath)
 gui, Show
 Return
+
+SelectTagListView:
+;if A_GuiEvent = I
+;{
+;	FileAppend, A_EventInfo, %A_Temp%\ProgressTracker\tags.temp
+;}
+return
 
 AddTag:
 Return
 
 SaveSelectedTags:
-gui, Submit, NoHide
+gui, Submit
+RowAmount := LV_GetCount()
+RowNumber := 0
+FileDelete, %A_Temp%\ProgressTracker\stags.temp
+Loop,
+{
+	FileRead, Stags, %A_Temp%\ProgressTracker\stags.temp
+	RowNumber := LV_GetNext(RowNumber, "C")
+	if ! RowNumber
+	{
+		break
+	}
+	Row := RowNumber
+	;MsgBox %Row%
+	LV_GetText(RowText, Row)
+	;MsgBox %RowText%
+	if Stags =
+	{
+		FileAppend, %RowText%, %A_Temp%\ProgressTracker\stags.temp
+	}
+	else
+	{
+		FileAppend, |%RowText%, %A_Temp%\ProgressTracker\stags.temp
+	}
+}
 Return
 
 SaveUpdate:
@@ -536,12 +571,18 @@ TotalProgress := CurrentProgress + ProgressAddPercent
 ;MsgBox, %CurrentProgress% %ProgressAddPercent% %TotalProgress%
 IniWrite, %TotalProgress%, %CurrentSaveFile%, %TVItemParentName%, ProgressTracker%TaskNumber%
 FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TVItemName%
+FileRead, UpdateTags, %A_Temp%\ProgressTracker\stags.temp
+Loop, Parse, UpdateTags, |
+{
+	AddToTagDir(A_LoopField,TVItemName,UpdateTitle,TagFilePath,1)
+}
 WriteUpdate(UpdateTitle,UpdateDescription,UpdateTags,FullUpdateFile)
 Sleep 250
 RefreshUpdateList(TVItemName,SavedProgramName,TVItemParentName,CurrentSaveFile)
 IniWrite, %LocalTime%, %CurrentSaveFile%, %TVItemParentName%, LastChange
 TV_Modify(TVItemID, Select)
 GuiControl,,ProgressBar, %TotalProgress%
+FileDelete, %RowText%, %A_Temp%\ProgressTracker\stags.temp
 return
 
 NotesListBox:

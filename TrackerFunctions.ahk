@@ -361,3 +361,73 @@ RefreshUpdateList(Selected,SavedProgramName,ParentName,SaveFile)
 		LV_ModifyCol(3, "SortDesc")
 	}
 }
+
+LoadTags(TagFile)
+{
+	IniRead, TagList, %TagFile%, TagInfo, Tags
+	Loop, Parse, TagList, `|
+	{
+		TaskAmount = %A_Index%
+		LV_Add("-Check",A_LoopField)
+	}
+}
+
+AddToTagDir(TagToAdd,ParentName,ItemName,TagFile,TagHolder)
+{
+	IniRead, TagList, %TagFile%, TagInfo, Tags
+	Loop, Parse, TagList, |
+	{
+		if A_LoopField = %TagToAdd%
+		{
+			TagNum = %A_Index%
+		}
+	}
+	if TagHolder = 1
+	{
+		IniRead, TagTaskList, %TagFile%, Tag%TagNum%, tasks
+		if (TagTaskList ="")
+		{
+			IniWrite, %ItemName%`@%ParentName%, %TagFile%, Tag%TagNum%, tasks
+		}
+		else
+		{
+			IniWrite, %TagTaskList%|%ItemName%`@%ParentName%, %TagFile%, Tag%TagNum%, tasks
+		}
+	}
+	if TagHolder = 2
+	{
+		IniRead, TagNoteList, %TagFile%, Tag%TagNum%, notes
+		if TagNoteList = ERROR
+		{
+			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, notes
+		}
+		else
+		{
+			IniWrite, |%ItemName%, %TagFile%, Tag%TagNum%, notes
+		}
+	}
+	if TagHolder = 3
+	{
+		IniRead, TagReminderList, %TagFile%, Tag%TagNum%, reminders
+		if TagReminderList = ERROR
+		{
+			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, reminders
+		}
+		else
+		{
+			IniWrite, |%ItemName%, %TagFile%, Tag%TagNum%, reminders
+		}	
+	}
+	if TagHolder = 4
+	{
+		IniRead, TagOtherList, %TagFile%, Tag%TagNum%, others
+		if TagOtherList = ERROR
+		{
+			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, others
+		}
+		else
+		{
+			IniWrite, |%ItemName%, %TagFile%, Tag%TagNum%, others
+		}	
+	}
+}
