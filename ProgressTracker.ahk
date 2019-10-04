@@ -194,7 +194,24 @@ EnableAllMenus()
 return
 
 MenuSettings:
+gui, Settings:New,, Settings
+gui, +ToolWindow
+Gui, Add, Tab3, x12 y9 w330 h250 , General|Paths|Collaboration|Update|Developer
+Gui, Tab, 1
+Gui, Add, CheckBox, vChromeDefault, Use Chrome as default browser
+Gui, Tab, 2
+Gui, Add, Text,, Save Path:
+Gui, Add, Edit, -Multi vDatabasePath h20 w250, %DatabaseFolder%
+Gui, Add, Text,, Tag List Path:
+Gui, Add, Edit, -Multi vQuotePath h20 w250, %SavedQuotePath%
+Gui, Tab
+Gui, Add, Button, gSaveSettings x12 y269 w330 h30 , Save Settings
+Gui, Show
 return
+
+SaveSettings:
+return
+
 CreateNote:
 return
 OpenNoteMenu:
@@ -213,7 +230,7 @@ return
 MenuAbout:
 DisableAllGui()
 DisableAllMenus()
-MsgBox,,About,%Codename%`nhttps://github.com/MeltedHeart/progress-tracker
+MsgBox,,About,%Codename% by Christian Barsallo`nhttps://github.com/MeltedHeart/progress-tracker`n`nCSV library by trueski, Kdoske and hosted by hi5`nhttps://github.com/hi5/CSV
 EnableAllGui()
 EnableAllMenus()
 return
@@ -414,11 +431,17 @@ return
 
 DeleteProject:
 Gui, ProgressTracker:Default
+Gui, Treeview, MainTreeView
 IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 TVItemID := TV_GetSelection()
 TV_GetText(TVItemName, TVItemID)
 if TV_Get(TVItemID, "Bold")
 {
+	MsgBox 52, Warning, All data on this task will be lost. `nAre you sure?
+	ifMsgBox, No
+	{
+		return
+	}
 	DeleteProject(TVItemName,CurrentSaveFile)
 	Goto LoadSaveFile
 }
@@ -430,8 +453,16 @@ else
 {
 	TVItemParentID := TV_GetParent(TVItemID)
 	TV_GetText(TVItemParentName, TVItemParentID)
-	DeleteTask(TVItemParentName,TVItemName,CurrentSaveFile)
-	Goto LoadSaveFile
+	MsgBox 52, Warning, All data on this task will be lost. `nAre you sure?
+	ifMsgBox, No
+	{
+		return
+	}
+	ifMsgBox, Yes
+	{
+		DeleteTask(TVItemParentName,TVItemName,CurrentSaveFile)
+		Goto LoadSaveFile
+	}
 }
 return
 
@@ -496,10 +527,6 @@ gui, Show
 return
 
 SelectTagListView:
-;if A_GuiEvent = I
-;{
-;	FileAppend, A_EventInfo, %A_Temp%\ProgressTracker\tags.temp
-;}
 return
 
 AddTag:

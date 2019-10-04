@@ -175,11 +175,6 @@ ProjectLoader(ProjectName,SaveFile)
 
 DeleteProject(ProjectName,SaveFile)
 {
-	MsgBox 52, Warning, All data on this Project will be lost. `nAre you sure?
-	ifMsgBox = No
-	{
-		return
-	}
 	IniRead, ProjectList, %SaveFile%, ProgramInfo, Projects
 	PipeProjectName=|%ProjectName%
 	StringReplace, ProjectList, ProjectList, %PipeProjectName%,, All
@@ -198,11 +193,6 @@ DeleteProject(ProjectName,SaveFile)
 
 DeleteTask(ProjectName,TaskName,SaveFile)
 {
-	MsgBox 52, Warning, All data on this task will be lost. `nAre you sure?
-	ifMsgBox = No
-	{
-		return
-	}
 	IniRead, TaskList, %SaveFile%, %ProjectName%, Tasks
 	Loop, Parse, TaskList, `|
 	{
