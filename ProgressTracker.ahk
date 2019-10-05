@@ -4,6 +4,7 @@ CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
 Temp_File=0 ; Check to see if the current file is a temp file
 SaveLocation=%A_MyDocuments%\ProgressTracker\ProgramData ; Default save location
 TagFilePath=%A_MyDocuments%\ProgressTracker\ProgramData\Tags.ptl ; Default location of tag list file, this could be changed to a variable so the user can have multiple tag lists or load one from another user
+MyDocumentsDataPath=%A_MyDocuments%\ProgressTracker
 FormatTime, LocalTime,,ShortDate
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 ;#Warn  ; Enable warnings to assist with detecting common errors.
@@ -188,7 +189,13 @@ MenuFileSaveAs:
 DisableAllGui()
 DisableAllMenus()
 Gui, Submit, NoHide
-FileSelectFile, ProgramSave,S,%A_MyDocuments%\ProgressTracker\ProgramData,Select where to save this program, *.ptp
+FileSelectFolder, ProgramSave,S,%MyDocumentsDataPath%,Select where to save this program
+IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+StringReplace,ProgramFolderPath,CurrentSaveFile,\%SavedProgramName%.ptp,,All
+;MsgBox,%ProgramFolderPath% ;Troubleshooting meant to be used for testing StringReplace and how it worked Spoiler: It did
+FileCreateDir, %ProgramFolderPath%\%SavedProgramName%
+CurrentProgramPath=%ProgramSave%\%SavedProgramName%
+FileCopyDir,%ProgramFolderPath%,%CurrentProgramPath%,1
 EnableAllGui()
 EnableAllMenus()
 return
