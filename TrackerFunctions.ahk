@@ -199,6 +199,7 @@ DeleteProject(ProjectName,SaveFile)
 
 DeleteTask(ProjectName,TaskName,SaveFile)
 {
+	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 	IniRead, TaskList, %SaveFile%, %ProjectName%, Tasks
 	Loop, Parse, TaskList, `|
 	{
@@ -231,6 +232,9 @@ DeleteTask(ProjectName,TaskName,SaveFile)
 				IniDelete, %SaveFile%,%ProjectName%, Task%TaskNum%
 				IniDelete, %SaveFile%,%ProjectName%, TaskDescription%TaskNum%
 				IniDelete, %SaveFile%,%ProjectName%, ProgressTracker%TaskNum%
+				; The following deletes all update data so it doesn't conflict with a new task of the same name
+				FileRemoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TaskName%
+				FileDelete, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\%TaskName%.ptl
 			}
 		}
 	}
