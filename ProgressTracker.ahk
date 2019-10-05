@@ -234,6 +234,7 @@ IfWinExist, Notes
 notename := "Notes"
 Gui, Notes:Default
 Gui, +HWNDhWnd +Resize +ToolWindow +ToolWindow +AlwaysOnTop
+Gui, Color, 1E1D1D
 Gui, Font, Bold, Arial
 Gui, Add, Button, y3 w20 h20 vBold gMakeNoteBold, B
 Gui, Font, Norm Italic
@@ -244,14 +245,16 @@ Gui, Font, Norm Strike
 Gui, Add, Button, x+0 yp wp hp vStrike gMakeNoteStrike, S
 Gui, Font, Norm
 Gui, Add, Button, x+0 yp wp hp vNormalF gMakeNoteNormal, N
-Gui, Add, Button, x+0 yp wp hp vSelectColor gNoteColor, Color
 Gui, +Hwnd%notename%
-Note := new richedit(%notename%,"x10 w285 h190", true)
+Note := new richedit(%notename%,"x10 w300 h190", true)
+Note.SetBkgndColor(0x262626)
+Font := {"Name":"Consolas","Color":0xDCDCCC,"Size":11}
+Note.SetFont(Font)
+Note.ShowScrollBar(0,True)
 Note.AlignText("RIGHT")
-Note.FontSize()
-;Note.ToggleFontStyle("U")
+;Note.ChangeFontSize(12)
 Note.WordWrap("On")
-Gui, Show, h225 w300 center,%notename%
+Gui, Show, h225 w315 center,%notename%
 return
 
 MakeNoteBold:
@@ -272,9 +275,6 @@ return
 
 MakeNoteNormal:
 Note.ToggleFontStyle("N")
-return
-
-NoteColor:
 return
 
 NoteSize:
@@ -383,7 +383,7 @@ else
 		return
 	}
 	else
-	GuiControl,,MainDescriptionText, %SelectedProjectDescription%
+		GuiControl,,MainDescriptionText, %SelectedProjectDescription%
 	GuiControl,,MainPropertiesText, Title: %SelectedProjectTitle%`nCreator: %CurrentUser%`nDate: %SelectedProjectDate%`nLast Change: %SelectedProjectLastChange%
 }
 return
@@ -713,9 +713,11 @@ else
 }
 
 NotesGuiClose:
+Gui, -AlwaysOnTop
 MsgBox 52, Warning, All progress that has not been saved will be lost. `nAre you sure?
 IfMsgBox No
 {
+	Gui, +AlwaysOnTop
 	return
 }
 else
