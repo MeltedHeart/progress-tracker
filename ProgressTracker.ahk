@@ -13,6 +13,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 #SingleInstance,Force
 #Include TrackerFunctions.ahk
 #Include csv.ahk
+#Include Class_RichEdit.ahk
 
 FileCreateDir, %A_MyDocuments%\ProgressTracker
 FileCreateDir, %A_MyDocuments%\ProgressTracker\DemoPrograms
@@ -127,6 +128,8 @@ IfMsgBox Yes
 	InputBox, NewFileName, New File, Choose a name for the new file,,210,125
 	if ErrorLevel = 1
 	{
+		EnableAllGui()
+		EnableAllMenus()
 		return
 	}
 	;CurrentSaveFile=%A_temp%\ProgressTracker\New_File.ptp
@@ -206,21 +209,91 @@ gui, +ToolWindow
 Gui, Add, Tab3, x12 y9 w330 h250 , General|Paths|Collaboration|Update|Developer
 Gui, Tab, 1
 Gui, Add, CheckBox, vChromeDefault, Use Chrome as default browser
+Gui, Add, CheckBox, vNotesAlwaysOnTop, Open notes will always be on top by default
+Gui, Add, CheckBox, vSaveFileBackup, Save/Backup attached files inside Task folder
+Gui, Add, CheckBox, vSaveScreenshot, Save Screenshots to latest task/project
+Gui, Add, CheckBox, vSaveScreenshotAsk, Ask before saving screenshot
 Gui, Tab, 2
-Gui, Add, Text,, Save Path:
-Gui, Add, Edit, -Multi vDatabasePath h20 w250, %DatabaseFolder%
 Gui, Add, Text,, Tag List Path:
-Gui, Add, Edit, -Multi vQuotePath h20 w250, %SavedQuotePath%
+Gui, Add, Edit, -Multi vTagPathCheck h20 w250, %TagListPath%
 Gui, Tab
 Gui, Add, Button, gSaveSettings x12 y269 w330 h30 , Save Settings
 Gui, Show
 return
 
 SaveSettings:
+gui, Submit
 return
 
 CreateNote:
+IfWinExist, Notes
+{
+	MsgBox 16, Warning, Notes window is already open!
+	return
+}
+notename := "Notes"
+Gui, Notes:Default
+Gui, +HWNDhWnd +Resize +ToolWindow +ToolWindow +AlwaysOnTop
+Gui, Font, Bold, Arial
+Gui, Add, Button, y3 w20 h20 vBold gMakeNoteBold, B
+Gui, Font, Norm Italic
+Gui, Add, Button, x+0 yp wp hp vItalic gMakeNoteItalic, I
+Gui, Font, Norm Underline
+Gui, Add, Button, x+0 yp wp hp vUnderline gMakeNoteUnderline, U
+Gui, Font, Norm Strike
+Gui, Add, Button, x+0 yp wp hp vStrike gMakeNoteStrike, S
+Gui, Font, Norm
+Gui, Add, Button, x+0 yp wp hp vNormalF gMakeNoteNormal, N
+Gui, Add, Button, x+0 yp wp hp vSelectColor gNoteColor, Color
+Gui, +Hwnd%notename%
+Note := new richedit(%notename%,"x10 w285 h190", true)
+Note.AlignText("RIGHT")
+Note.FontSize()
+;Note.ToggleFontStyle("U")
+Note.WordWrap("On")
+Gui, Show, h225 w300 center,%notename%
 return
+
+MakeNoteBold:
+Note.ToggleFontStyle("B")
+return
+
+MakeNoteItalic:
+Note.ToggleFontStyle("I")
+return
+
+MakeNoteUnderline:
+Note.ToggleFontStyle("U")
+return
+
+MakeNoteStrike:
+Note.ToggleFontStyle("S")
+return
+
+MakeNoteNormal:
+Note.ToggleFontStyle("N")
+return
+
+NoteColor:
+return
+
+NoteSize:
+return
+
+#If (HasFocus)
+; FontStyles
+^!b::  ; bold
+^!h::  ; superscript
+^!i::  ; italic
+^!l::  ; subscript
+^!n::  ; normal
+^!p::  ; protected
+^!s::  ; strikeout
+^!u::  ; underline
+RE2.ToggleFontStyle(SubStr(A_ThisHotkey, 3))
+;GoSub, UpdateGui
+Return
+
 OpenNoteMenu:
 return
 CreateReminder:
@@ -237,7 +310,7 @@ return
 MenuAbout:
 DisableAllGui()
 DisableAllMenus()
-MsgBox,,About,%Codename% by Christian Barsallo`nhttps://github.com/MeltedHeart/progress-tracker`n`nCSV library by trueski, Kdoske and hosted by hi5`nhttps://github.com/hi5/CSV
+MsgBox,,About,%Codename% by Christian Barsallo`nhttps://github.com/MeltedHeart/progress-tracker`n`nCSV library by trueski, Kdoske and hosted by hi5`nhttps://github.com/hi5/CSV`n`nClass_RichEdit by just me`nhttps://github.com/AHK-just-me/Class_RichEdit`n`nThanks to BGM for the easy RichEdit example!
 EnableAllGui()
 EnableAllMenus()
 return
@@ -637,6 +710,18 @@ IfMsgBox No
 else
 {
 	ExitApp
+}
+
+NotesGuiClose:
+MsgBox 52, Warning, All progress that has not been saved will be lost. `nAre you sure?
+IfMsgBox No
+{
+	return
+}
+else
+{
+	Gui, Destroy
+	return
 }
 
 GuiClose:
