@@ -122,6 +122,16 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 				LV_Add("",UpdateListTitle,UpdateListPercentage,UpdateListTime,UpdateListConvertedTime,UpdateListUpdateFile)
 				LV_ModifyCol(3, "SortDesc")
 			}
+			GuiControl,,NotesListBox, |
+			IniRead, NoteList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%SelectedTaskTitle%.ptl, NoteInfo, NoteList
+			Loop, parse, NoteList, `|
+			{
+				if A_LoopField = ERROR
+				{
+					Break
+				}
+				GuiControl,,NotesListBox, %A_LoopField%
+			}
 		}
 		if Selected = %SavedProgramName%
 		{
@@ -154,6 +164,7 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 
 ProjectLoader(ProjectName,SaveFile)
 {
+	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 	LV_Delete()
 	GuiControl,, UpdateTitle, Update Title
 	GuiControl,, UpdateDescription, Update Description
@@ -177,6 +188,16 @@ ProjectLoader(ProjectName,SaveFile)
 	}
 	GuiControl,+Range0-%TaskProgressTotalRange%, ProgressBar
 	GuiControl,, ProgressBar, %ProgressSum%
+	GuiControl,,NotesListBox, |
+	IniRead, NoteList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%ProjectName%.ptl, NoteInfo, NoteList
+	Loop, parse, NoteList, `|
+	{
+		if A_LoopField = ERROR
+		{
+			Break
+		}
+		GuiControl,,NotesListBox, %A_LoopField%
+	}
 }
 
 DeleteProject(ProjectName,SaveFile)
@@ -337,7 +358,7 @@ WriteUpdate(Title,Description,Tags,SaveFile)
 	IniWrite, %Description%, %SaveFile%, UpdateContent, UpdateDescription
 }
 
-RefreshUpdateList(Selected,SavedProgramName,ParentName,SaveFile)
+RefreshUpdateList(SelectedItem,SavedProgramName,ParentName,SaveFile)
 {
 	IniRead, TaskList, %SaveFile%, %ParentName%, Tasks
 	Loop, Parse, TaskList, `|
@@ -345,7 +366,7 @@ RefreshUpdateList(Selected,SavedProgramName,ParentName,SaveFile)
 		TaskAmount = %A_Index%
 	}
 	IniRead, SelectedTaskTitle, %SaveFile%, %ParentName%, Task%TaskAmount%
-	UpdateListPath=%A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%Selected%.ptl
+	UpdateListPath=%A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedItem%.ptl
 	CSV_Load(UpdateListPath,"UpdateListCSV",",")
 	UpdateAmount:=CSV_TotalRows("UpdateListCSV")
 	LV_Delete()
@@ -360,6 +381,22 @@ RefreshUpdateList(Selected,SavedProgramName,ParentName,SaveFile)
 		LV_Add("",UpdateListTitle,UpdateListPercentage,UpdateListTime,UpdateListConvertedTime,UpdateListUpdateFile)
 		LV_ModifyCol(3, "SortDesc")
 	}
+}
+
+RefreshNoteList(SelectedItem)
+{
+	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+	GuiControl,,NotesListBox, |
+	IniRead, NoteList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%SelectedItem%.ptl, NoteInfo, NoteList
+	Loop, parse, NoteList, `|
+	{
+		if A_LoopField = ERROR
+		{
+			Break
+		}
+		GuiControl,,NotesListBox, %A_LoopField%
+	}
+	return
 }
 
 LoadTags(TagFile)

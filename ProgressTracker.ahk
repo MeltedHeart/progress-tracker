@@ -257,9 +257,10 @@ Note.ShowScrollBar(0,True)
 Note.AlignText("RIGHT")
 ;Note.ChangeFontSize(12)
 Note.WordWrap("On")
-Gui, Add, Button, x5 y225 vNewNoteB gSaveNote w50, New
-Gui, Add, Button, x+0 yp vSaveNoteB gSaveNote w255, &Save
+Gui, Add, Button, x5 y225 vNewNoteB gSaveNewNote w50, New
+Gui, Add, Button, x+0 yp vSaveNoteB gSaveCurrentNote w255, Save
 Gui, +MinSize
+NewNoteTrigger = 1
 Gui, Show, h255 w315 center,%notename%
 return
 
@@ -281,9 +282,6 @@ return
 
 MakeNoteNormal:
 Note.ToggleFontStyle("N")
-return
-
-NoteSize:
 return
 
 NoteWindowTrans:
@@ -310,7 +308,7 @@ if NoteAOTCheck = 0
 }
 return
 
-NotesguiSize:
+NotesGuiSize:
 Critical
 NoteW := (A_GuiWidth - 10)
 NoteH := (A_GuiHeight - 66)
@@ -321,10 +319,42 @@ GuiControl, Move, SaveNoteB, y%ButtonH% w%ButtonW%
 GuiControl, Move, NewNoteB, y%ButtonH% 
 return
 
-SaveNote:
-InputBox, NoteFileName, Name, Choose a name for this note
+SaveNewNote:
+Note.SelAll()
+Note.Clear()
+Note.SetFont(Font)
+NewNoteTrigger = 1
+return
+
+SaveCurrentNote:
+SelectedTVItemID := TV_GetSelection()
+TV_GetText(TVItemName,SelectedTVItemID)
+IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+MsgBox, %NewNoteTrigger%
+if NewNoteTrigger = 0
+{
+	NoteSaveLocation = %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TVItemName%\%CurrentNoteName%.rtf
+	Note.SaveFile(NoteSaveLocation)
+	MsgBox,,Saved, Note Saved!, 2
+	RefreshNoteList(TVItemName)
+	return
+}
+InputBox, NoteFileName, Name, Choose a name for this note,,195,125
+if ErrorLevel = 1
+{
+	return
+}
+IniRead, CurrentNoteList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TVItemName%.ptl, NoteInfo, NoteList
+IfInString, CurrentNoteList, NoteFileName
+{
+	MsgBox 16, Name Error, There's already a note with that name!
+	return
+}
+IniWrite, %NoteFileName%|%CurrentNoteList%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TVItemName%.ptl, NoteInfo, NoteList
+NoteSaveLocation = %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TVItemName%\%NoteFileName%.rtf
 Note.SaveFile(NoteSaveLocation)
-MsgBox, Note Saved!
+MsgBox,,Saved, Note Saved!, 3
+RefreshNoteList(TVItemName)
 return
 
 #If (HasFocus)
@@ -430,8 +460,11 @@ else
 		return
 	}
 	else
+	{
 		GuiControl,,MainDescriptionText, %SelectedProjectDescription%
-	GuiControl,,MainPropertiesText, Title: %SelectedProjectTitle%`nCreator: %CurrentUser%`nDate: %SelectedProjectDate%`nLast Change: %SelectedProjectLastChange%
+		GuiControl,,MainPropertiesText, Title: %SelectedProjectTitle%`nCreator: %CurrentUser%`nDate: %SelectedProjectDate%`nLast Change: %SelectedProjectLastChange%
+		GuiControl,,NotesListBox, |
+	}
 }
 return
 
@@ -645,15 +678,12 @@ TagsButton:
 gui, TagSelector:New, ToolWindow, Tag Selector
 gui, Add, Text,, Select the tag(s) for this update:
 Gui, Font, s11
-gui, Add, ListView, AltSubmit gSelectTagListView Checked w150 r8, Tag Name
+gui, Add, ListView, AltSubmit Checked w150 r8, Tag Name
 Gui, Font
 gui, Add, Button, w25 gAddTag, +
 gui, Add, Button, Default x35 y219 w125 gSaveSelectedTags, OK
 LoadTags(TagFilePath)
 gui, Show
-return
-
-SelectTagListView:
 return
 
 AddTag:
@@ -742,7 +772,29 @@ FileDelete, %RowText%, %A_Temp%\ProgressTracker\stags.temp
 return
 
 NotesListBox:
+gui, Submit, NoHide
+if A_GuiEvent = DoubleClick
+{
+	TVItemID := TV_GetSelection()
+	TV_GetText(TVItemName, TVItemID)
+	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+	IfWinExist, Notes
+	{
+		NewNoteTrigger = 0
+		CurrentNoteName = %NotesListBox%
+		NotePath = %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TVItemName%\%CurrentNoteName%.rtf
+		;MsgBox, %ListBoxItems% %ListBoxText% %NotePath%
+		Note.LoadFile(NotePath)
+		return
+	}
+	else
+	{
+		GoSub, CreateNote
+		Goto NotesListBox
+	}
+}
 return
+
 ReminderListBox:
 return
 OtherListBox:
