@@ -1,0 +1,27 @@
+[ProgramInfo]
+ProgramName=TestFile
+Creator=blakw
+CreatorVersion=
+Projects=TestingGrounds
+[TestFile]
+ProjectTitle=TestFile
+ProjectDescription=You can change this name/description by left clicking on this Program
+Creator=
+Date=9/22/2019
+LastChange=
+ProjectDescription=You can change this name/description by left clicking on this Program
+[TestingGrounds]
+ProjectTitle=TestingGrounds
+Creator=
+Date=10/1/2019
+LastChange=10/4/19 4:45AM
+ProjectDescription=You can change this name/description by left clicking on this project and selecting Change Description/Change Name
+ProjectNotes=
+ProjectReminder=
+Tasks=TaskTester|TaskTester2
+Task1=TaskTester
+TaskDescription1=You can change this name/description by left clicking on this project and selecting Change Description/Change Name
+ProgressTracker1=15
+Task2=TaskTester2
+TaskDescription2=You can change this name/description by left clicking on this task
+ProgressTracker2=50

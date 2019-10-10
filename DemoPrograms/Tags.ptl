@@ -1,0 +1,19 @@
+[TagInfo]
+Tags=urgent|testingtag|todo|NewTagTest|documentation
+[Tag1]
+tasks=Update Titledsfsdfs@TestTask
+notes=
+reminders=
+other=
+[Tag2]
+tasks=Test3@NewTask|TestUpdate@TestTask|Going up to 50%@TaskTester2|Bruh@New Task 34
+notes=
+reminders=
+other=
+[Tag3]
+tasks=
+notes=
+reminders=
+others=
+[Tag4]
+tasks=ERROR|Going up to 50%@TaskTester2
