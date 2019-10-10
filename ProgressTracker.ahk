@@ -215,7 +215,7 @@ Gui, Add, CheckBox, vSaveScreenshot, Save Screenshots to latest task/project
 Gui, Add, CheckBox, vSaveScreenshotAsk, Ask before saving screenshot
 Gui, Tab, 2
 Gui, Add, Text,, Tag List Path:
-Gui, Add, Edit, -Multi vTagPathCheck h20 w250, %TagListPath%
+Gui, Add, Edit, -Multi vTagPathCheck h20 w250, %TagFilePath%
 Gui, Tab
 Gui, Add, Button, gSaveSettings x12 y269 w330 h30 , Save Settings
 Gui, Show
@@ -233,9 +233,10 @@ IfWinExist, Notes
 }
 notename := "Notes"
 Gui, Notes:Default
-Gui, +HWNDhWnd +Resize +ToolWindow +ToolWindow +AlwaysOnTop
+Gui, +HWNDhWnd +Resize +ToolWindow +ToolWindow
 Gui, Color, 1E1D1D
 Gui, Font, Bold, Arial
+Gui, Font, cWhite
 Gui, Add, Button, y3 w20 h20 vBold gMakeNoteBold, B
 Gui, Font, Norm Italic
 Gui, Add, Button, x+0 yp wp hp vItalic gMakeNoteItalic, I
@@ -245,16 +246,21 @@ Gui, Font, Norm Strike
 Gui, Add, Button, x+0 yp wp hp vStrike gMakeNoteStrike, S
 Gui, Font, Norm
 Gui, Add, Button, x+0 yp wp hp vNormalF gMakeNoteNormal, N
+Gui, Add, CheckBox, x+5 yp w90 hp vTransparentCheck gNoteWindowTrans, Transparent
+Gui, Add, CheckBox, x+0 yp w120 hp vNoteAOTCheck gNoteAlwaysOnTop, Always On Top
 Gui, +Hwnd%notename%
 Note := new richedit(%notename%,"x10 w300 h190", true)
 Note.SetBkgndColor(0x262626)
-Font := {"Name":"Consolas","Color":0xDCDCCC,"Size":11}
+Font := {"Name":"Consolas","Color":0xDCDCCC,"Size":10}
 Note.SetFont(Font)
 Note.ShowScrollBar(0,True)
 Note.AlignText("RIGHT")
 ;Note.ChangeFontSize(12)
 Note.WordWrap("On")
-Gui, Show, h225 w315 center,%notename%
+Gui, Add, Button, x5 y225 vNewNoteB gSaveNote w50, New
+Gui, Add, Button, x+0 yp vSaveNoteB gSaveNote w255, &Save
+Gui, +MinSize
+Gui, Show, h255 w315 center,%notename%
 return
 
 MakeNoteBold:
@@ -280,6 +286,47 @@ return
 NoteSize:
 return
 
+NoteWindowTrans:
+gui, Submit, NoHide
+if TransparentCheck = 1
+{
+	WinSet, Transparent, 175
+}
+if TransparentCheck = 0
+{
+	WinSet, TransColor, Off
+}
+return
+
+NoteAlwaysOnTop:
+gui, Submit, NoHide
+if NoteAOTCheck = 1
+{
+	Gui, +AlwaysOnTop
+}
+if NoteAOTCheck = 0
+{
+	Gui, -AlwaysOnTop
+}
+return
+
+NotesguiSize:
+Critical
+NoteW := (A_GuiWidth - 10)
+NoteH := (A_GuiHeight - 66)
+ButtonH := (A_GuiHeight - 30)
+ButtonW := (A_GuiWidth - 60)
+GuiControl, Move, % Note.HWND, x5 w%NoteW% h%NoteH%
+GuiControl, Move, SaveNoteB, y%ButtonH% w%ButtonW%
+GuiControl, Move, NewNoteB, y%ButtonH% 
+return
+
+SaveNote:
+InputBox, NoteFileName, Name, Choose a name for this note
+Note.SaveFile(NoteSaveLocation)
+MsgBox, Note Saved!
+return
+
 #If (HasFocus)
 ; FontStyles
 ^!b::  ; bold
@@ -290,7 +337,7 @@ return
 ^!p::  ; protected
 ^!s::  ; strikeout
 ^!u::  ; underline
-RE2.ToggleFontStyle(SubStr(A_ThisHotkey, 3))
+Note.ToggleFontStyle(SubStr(A_ThisHotkey, 3))
 ;GoSub, UpdateGui
 Return
 
