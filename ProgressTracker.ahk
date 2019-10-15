@@ -81,32 +81,32 @@ Gui, Add, Text,vMainDescriptionText w220 h125 , Click on an item to view more
 Gui, Tab, 2
 Gui, Add, Text,vMainPropertiesText w220 h125 , Click on an item to view more
 Gui, Tab
-Gui, Add, Tab3,+hide vTaskBox x265 y8 w610 h645, Info
-Gui, Add, GroupBox, w580 h100, Current Progress
-Gui, Add, GroupBox, w580 h258, Updates
-Gui, Add, GroupBox, w190 h225, Notes
-Gui, Add, GroupBox, x475 y415 w190 h225, Reminders
-Gui, Add, GroupBox, x670 y415 w190 h225, Other
-Gui, Add, Progress, vProgressBar x300 y70 w540 h50, 1
+Gui, Add, Tab3,+hide vTaskBox x265 y8 w630 h645, Info
+Gui, Add, GroupBox, w600 h100, Current Progress
+Gui, Add, GroupBox, w600 h258, Updates
+Gui, Add, GroupBox, w195 h225, Notes
+Gui, Add, GroupBox, x485 y415 w190 h225, Reminders
+Gui, Add, GroupBox, x685 y415 w195 h225, Other
+Gui, Add, Progress, vProgressBar x300 y70 w560 h50, 1
 Gui, Font, s9
-Gui, Add, ListView, gUpdateListView vUpdateListView AltSubmit x290 y170 w210 h225, Title|`%|UCT|Date|File
-LV_ModifyCol(1,80)
-LV_ModifyCol(2,30)
+Gui, Add, ListView, gUpdateListView vUpdateListView AltSubmit x290 y170 w235 h225, Title|`%|UCT|Date|File
+LV_ModifyCol(1,102)
+LV_ModifyCol(2,27)
 LV_ModifyCol(3,0)
-LV_ModifyCol(4,96)
+LV_ModifyCol(4,102)
 LV_ModifyCol(5,0)
 Gui, Font, s11
-Gui, Add, Edit, vUpdateTitle x510 y170 w335 h20, Update Title
-Gui, Add, Edit, vUpdateDescription x510 y200 w335 h160, Update Description
-Gui, Add, Text,x510 y370, Progress
-Gui, Add, Edit, vPercentEdit ReadOnly x570 y368 w50
+Gui, Add, Edit, vUpdateTitle x535 y170 w335 h20, Update Title
+Gui, Add, Edit, vUpdateDescription x535 y200 w335 h160, Update Description
+Gui, Add, Text,x535 y370, Progress
+Gui, Add, Edit, vPercentEdit ReadOnly x595 y368 w50
 Gui, Add, UpDown, vProgressAddPercent Range-100-100, 1 
-Gui, Add, Text,x622 y370, `%
-Gui, Add, Button,x700 y366 vTagsButton gTagsButton, Tags
-Gui, Add, Button,x750 y366 vSaveUpdate gSaveUpdate , Save Update
-Gui, Add, ListBox, gNotesListBox vNotesListBox x291 y435 w170 r12
-Gui, Add, ListBox, gReminderListBox vReminderListBox x485 y435 w170 r12
-Gui, Add, ListBox, gOtherListBox vOtherListBox x680 y435 w170 r12
+Gui, Add, Text,x647 y370, `%
+Gui, Add, Button,x725 y366 vTagsButton gTagsButton, Tags
+Gui, Add, Button,x775 y366 vSaveUpdate gSaveUpdate , Save Update
+Gui, Add, ListBox, gNotesListBox vNotesListBox x291 y435 w175 r12
+Gui, Add, ListBox, gReminderListBox vReminderListBox x496 y435 w170 r12
+Gui, Add, ListBox, gOtherListBox vOtherListBox x695 y435 w175 r12
 Gui, Add, StatusBar,,
 SB_SetParts(500,400)
 SB_SetText("Upcoming Reminder:", 1)
@@ -208,6 +208,7 @@ gui, Settings:New,, Settings
 gui, +ToolWindow
 Gui, Add, Tab3, x12 y9 w330 h250 , General|Paths|Collaboration|Update|Developer
 Gui, Tab, 1
+Gui, Add, CheckBox, Checked vWarnPopUp, Show a message box when closing data windows, confirming `ninputs and/or editing items
 Gui, Add, CheckBox, vChromeDefault, Use Chrome as default browser
 Gui, Add, CheckBox, vNotesAlwaysOnTop, Open notes will always be on top by default
 Gui, Add, CheckBox, vSaveFileBackup, Save/Backup attached files inside Task folder
@@ -216,6 +217,10 @@ Gui, Add, CheckBox, vSaveScreenshotAsk, Ask before saving screenshot
 Gui, Tab, 2
 Gui, Add, Text,, Tag List Path:
 Gui, Add, Edit, -Multi vTagPathCheck h20 w250, %TagFilePath%
+Gui, Tab, 5
+Gui, Add, Text,,Time:
+FormatTime, LocalTime,,ShortDate
+Gui, Add, Edit, +ReadOnly,%A_Now% - %LocalTime%
 Gui, Tab
 Gui, Add, Button, gSaveSettings x12 y269 w330 h30 , Save Settings
 Gui, Show
@@ -257,7 +262,7 @@ Note.ShowScrollBar(0,True)
 Note.AlignText("RIGHT")
 ;Note.ChangeFontSize(12)
 Note.WordWrap("On")
-Gui, Add, Button, x5 y225 vNewNoteB gSaveNewNote w50, New
+Gui, Add, Button, x5 y225 vNewNoteB gNewNote w50, New
 Gui, Add, Button, x+0 yp vSaveNoteB gSaveCurrentNote w255, Save
 Gui, +MinSize
 NewNoteTrigger = 1
@@ -319,7 +324,7 @@ GuiControl, Move, SaveNoteB, y%ButtonH% w%ButtonW%
 GuiControl, Move, NewNoteB, y%ButtonH% 
 return
 
-SaveNewNote:
+NewNote:
 Note.SelAll()
 Note.Clear()
 Note.SetFont(Font)
@@ -330,7 +335,7 @@ SaveCurrentNote:
 SelectedTVItemID := TV_GetSelection()
 TV_GetText(TVItemName,SelectedTVItemID)
 IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
-MsgBox, %NewNoteTrigger%
+;MsgBox, %NewNoteTrigger%
 if NewNoteTrigger = 0
 {
 	NoteSaveLocation = %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TVItemName%\%CurrentNoteName%.rtf
@@ -356,20 +361,6 @@ Note.SaveFile(NoteSaveLocation)
 MsgBox,,Saved, Note Saved!, 3
 RefreshNoteList(TVItemName)
 return
-
-#If (HasFocus)
-; FontStyles
-^!b::  ; bold
-^!h::  ; superscript
-^!i::  ; italic
-^!l::  ; subscript
-^!n::  ; normal
-^!p::  ; protected
-^!s::  ; strikeout
-^!u::  ; underline
-Note.ToggleFontStyle(SubStr(A_ThisHotkey, 3))
-;GoSub, UpdateGui
-Return
 
 OpenNoteMenu:
 return
