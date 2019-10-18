@@ -87,6 +87,7 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			LV_Delete()
 			GuiControl,, UpdateTitle, Update Title
 			GuiControl,, UpdateDescription, Update Description
+			GuiControl,Enable, UpdateListView
 			GuiControl,Enable, UpdateTitle
 			GuiControl,Enable, UpdateDescription
 			GuiControl,Enable, TagsButton
@@ -146,29 +147,16 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			GuiControl,Disable, PercentEdit
 			GuiControl,,ProgressBar, 0
 		}
-		IniRead, ProjectList, %SaveFile%, ProgramInfo, Projects
-		IfInString, ProjectList, %Selected%
-		{
-			LV_Delete()
-			GuiControl,, UpdateTitle, Update Title
-			GuiControl,, UpdateDescription, Update Description
-			GuiControl,Disable, UpdateTitle
-			GuiControl,Disable, UpdateDescription
-			GuiControl,Disable, TagsButton
-			GuiControl,Disable, SaveUpdate
-			GuiControl,Disable, ProgressAddPercent
-			GuiControl,Disable, PercentEdit
-		}
 	}
 }
 
 ProjectLoader(ProjectName,SaveFile)
 {
-	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+	IniRead, SavedProgramName, %SaveFile%, ProgramInfo, ProgramName
 	LV_Delete()
 	GuiControl,, UpdateTitle, Update Title
 	GuiControl,, UpdateDescription, Update Description
-	;GuiControl,Disable, UpdateListView
+	GuiControl,Disable, UpdateListView
 	GuiControl,Disable, UpdateTitle
 	GuiControl,Disable, UpdateDescription
 	GuiControl,Disable, TagsButton
@@ -198,6 +186,22 @@ ProjectLoader(ProjectName,SaveFile)
 		}
 		GuiControl,,NotesListBox, %A_LoopField%
 	}
+}
+
+ProgramLoader()
+{
+	LV_Delete()
+	GuiControl,, UpdateTitle, Update Title
+	GuiControl,, UpdateDescription, Update Description
+	GuiControl,Disable, UpdateListView
+	GuiControl,Disable, UpdateTitle
+	GuiControl,Disable, UpdateDescription
+	GuiControl,Disable, TagsButton
+	GuiControl,Disable, SaveUpdate
+	GuiControl,Disable, ProgressAddPercent
+	GuiControl,Disable, PercentEdit
+	GuiControl,,NotesListBox, |
+	return
 }
 
 DeleteProject(ProjectName,SaveFile)
@@ -275,8 +279,10 @@ CreateNewFile(FileName,WhereToSave)
 
 WriteNewProject(ProjectName,TaskCount,SaveFile)
 {
+	IniRead, SavedProgramName, %SaveFile%, ProgramInfo, ProgramName
 	FormatTime, LocalTime,,ShortDate
 	FileAppend,`n[%ProjectName%]`nProjectTitle=%ProjectName%`nCreator=%A_User%`nDate=%LocalTime%`nLastChange=%LocalTime%`nProjectDescription=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProjectNotes=`nProjectReminder=`nTasks= New Task %TaskCount%`nTask1=New Task %TaskCount%`nTaskDescription1=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProgressTracker1=0,%SaveFile%
+	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%ProjectName%
 }
 
 WriteNewTask(TaskName,ProjectName,SaveFile) 
@@ -292,6 +298,7 @@ WriteNewTask(TaskName,ProjectName,SaveFile)
 	IniWrite, 0, %SaveFile%, %ProjectName%, ProgressTracker%TaskAmount%
 	IniRead, SavedProgramName, %SaveFile%, ProgramInfo, ProgramName
 	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TaskName%
+	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TaskName%
 }
 
 ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
@@ -452,13 +459,21 @@ AddToTagDir(TagToAdd,ParentName,ItemName,TagFile,TagHolder)
 	if TagHolder = 2
 	{
 		IniRead, TagNoteList, %TagFile%, Tag%TagNum%, notes
+		if (TagNoteList = )
+		{
+			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, notes
+		}
+		if (TagNoteList ="ERROR")
+		{
+			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, notes
+		}
 		if (TagNoteList ="")
 		{
 			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, notes
 		}
 		else
 		{
-			IniWrite, |%ItemName%, %TagFile%, Tag%TagNum%, notes
+			IniWrite, |%ItemName%`@%ParentName%, %TagFile%, Tag%TagNum%, notes
 		}
 	}
 	if TagHolder = 3

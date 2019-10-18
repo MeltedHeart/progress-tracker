@@ -3,7 +3,6 @@ Codename=ProgressTracker
 CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
 Temp_File=0 ; Check to see if the current file is a temp file
 SaveLocation=%A_MyDocuments%\ProgressTracker\ProgramData ; Default save location
-TagFilePath=%A_MyDocuments%\ProgressTracker\ProgramData\Tags.ptl ; Default location of tag list file, this could be changed to a variable so the user can have multiple tag lists or load one from another user
 MyDocumentsDataPath=%A_MyDocuments%\ProgressTracker
 FormatTime, LocalTime,,ShortDate
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
@@ -64,6 +63,7 @@ Menu, RemindersMenu, Add, &View Reminders, OpenReminderMenu
 Menu, OtherMenu, Add, Save a &Link`tCtrl+L, SaveLink
 Menu, OtherMenu, Add, Attach a &File`tCtrl+F, AttachFile
 Menu, OtherMenu, Add, Open Tags Menu, OpenTags
+Menu, OtherMenu, Add, Save Pictures when detected, SavePictures
 
 Menu, HelpMenu, Add, About, MenuAbout
 
@@ -102,7 +102,7 @@ Gui, Add, Text,x535 y370, Progress
 Gui, Add, Edit, vPercentEdit ReadOnly x595 y368 w50
 Gui, Add, UpDown, vProgressAddPercent Range-100-100, 1 
 Gui, Add, Text,x647 y370, `%
-Gui, Add, Button,x725 y366 vTagsButton gTagsButton, Tags
+;Gui, Add, Button,x725 y366 vTagsButton gTagsButton, Tags \\ Disabled until I can figure out how to do this correctly
 Gui, Add, Button,x775 y366 vSaveUpdate gSaveUpdate , Save Update
 Gui, Add, ListBox, gNotesListBox vNotesListBox x291 y435 w175 r12
 Gui, Add, ListBox, gReminderListBox vReminderListBox x496 y435 w170 r12
@@ -177,6 +177,7 @@ else
 LoadSaveFile:
 IniWrite, %CurrentSaveFile%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+TagFilePath=%A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Tags.ptl ; Default location of tag list file, this could be changed to a variable so the user can have multiple tag lists or load one from another user
 IniRead, ProgramDescription, %CurrentSaveFile%, ProgramInfo, ProgramDescription
 IniRead, ProjectList, %CurrentSaveFile%, ProgramInfo, Projects
 ;IniRead, TaskList, %CurrentSaveFile%, %TVItemName%, Tasks
@@ -238,7 +239,7 @@ IfWinExist, Notes
 }
 notename := "Notes"
 Gui, Notes:Default
-Gui, +HWNDhWnd +Resize +ToolWindow +ToolWindow
+Gui, +HWNDhWnd +Resize ;-SysMenu ;+ToolWindow +ToolWindow
 Gui, Color, 1E1D1D
 Gui, Font, Bold, Arial
 Gui, Font, cWhite
@@ -251,6 +252,8 @@ Gui, Font, Norm Strike
 Gui, Add, Button, x+0 yp wp hp vStrike gMakeNoteStrike, S
 Gui, Font, Norm
 Gui, Add, Button, x+0 yp wp hp vNormalF gMakeNoteNormal, N
+Gui, Add, Button, x+0 yp wp hp vUpSize gMakeNoteUpSize, ↑
+Gui, Add, Button, x+0 yp wp hp vDownSize gMakeNoteDownSize, ↓
 Gui, Add, CheckBox, x+5 yp w90 hp vTransparentCheck gNoteWindowTrans, Transparent
 Gui, Add, CheckBox, x+0 yp w120 hp vNoteAOTCheck gNoteAlwaysOnTop, Always On Top
 Gui, +Hwnd%notename%
@@ -264,9 +267,10 @@ Note.AlignText("RIGHT")
 Note.WordWrap("On")
 Gui, Add, Button, x5 y225 vNewNoteB gNewNote w50, New
 Gui, Add, Button, x+0 yp vSaveNoteB gSaveCurrentNote w255, Save
+Gui, Add, Button, x+0 yp vTagsNoteB gTagsButton w50, Tags
 Gui, +MinSize
 NewNoteTrigger = 1
-Gui, Show, h255 w315 center,%notename%
+Gui, Show, h255 w345 center,%notename%
 return
 
 MakeNoteBold:
@@ -287,6 +291,14 @@ return
 
 MakeNoteNormal:
 Note.ToggleFontStyle("N")
+return
+
+MakeNoteUpSize:
+Note.ChangeFontSize(+1)
+return
+
+MakeNoteDownSize:
+Note.ChangeFontSize(-1)
 return
 
 NoteWindowTrans:
@@ -318,10 +330,12 @@ Critical
 NoteW := (A_GuiWidth - 10)
 NoteH := (A_GuiHeight - 66)
 ButtonH := (A_GuiHeight - 30)
-ButtonW := (A_GuiWidth - 60)
+ButtonW := (A_GuiWidth - 110)
+ButtonX := (A_GuiWidth - 55)
 GuiControl, Move, % Note.HWND, x5 w%NoteW% h%NoteH%
-GuiControl, Move, SaveNoteB, y%ButtonH% w%ButtonW%
 GuiControl, Move, NewNoteB, y%ButtonH% 
+GuiControl, Move, SaveNoteB, y%ButtonH% w%ButtonW%
+GuiControl, Move, TagsNoteB, x%ButtonX% y%ButtonH% 
 return
 
 NewNote:
@@ -356,10 +370,17 @@ IfInString, CurrentNoteList, NoteFileName
 	return
 }
 IniWrite, %NoteFileName%|%CurrentNoteList%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TVItemName%.ptl, NoteInfo, NoteList
+FileRead, Stags, %A_Temp%\ProgressTracker\stags.temp
+Loop, Parse, Stags, |
+{
+	AddToTagDir(A_LoopField,TVItemName,NoteFileName,TagFilePath,2)
+}
+IniWrite, %Stags%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TVItemName%.ptl, %NoteFileName%, Tags
 NoteSaveLocation = %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TVItemName%\%NoteFileName%.rtf
 Note.SaveFile(NoteSaveLocation)
 MsgBox,,Saved, Note Saved!, 3
 RefreshNoteList(TVItemName)
+NewNoteTrigger = 0
 return
 
 OpenNoteMenu:
@@ -429,6 +450,7 @@ if TVItemName=""
 }
 else
 {
+	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 	IniRead, SelectedProjectDescription, %CurrentSaveFile%, %TVItemName%, ProjectDescription
 	IniRead, SelectedProjectTitle, %CurrentSaveFile%, %TVItemName%, ProjectTitle
 	;IniRead, SelectedProjectCreator, %CurrentSaveFile%, %TVItemName%, ProjectCreator //Placeholder for collaboration in the future
@@ -436,11 +458,19 @@ else
 	IniRead, SelectedProjectLastChange, %CurrentSaveFile%, %TVItemName%, LastChange
 	if ! TV_Get(A_EventInfo, "Bold")
 	{
-		TVItemID := TV_GetSelection()
-		TaskParent := TV_GetParent(TVItemID)
-		TV_GetText(TVItemTaskName,TaskParent)
-		IniRead, TaskList, %CurrentSaveFile%, %TVItemTaskName%, Tasks
-		TaskLoader(TVItemName,TVItemTaskName,TaskList,CurrentSaveFile)
+		if TVItemName = %SavedProgramName%
+		{
+			ProgramLoader()
+			return
+		}
+		else
+		{
+			TVItemID := TV_GetSelection()
+			TaskParent := TV_GetParent(TVItemID)
+			TV_GetText(TVItemTaskName,TaskParent)
+			IniRead, TaskList, %CurrentSaveFile%, %TVItemTaskName%, Tasks
+			TaskLoader(TVItemName,TVItemTaskName,TaskList,CurrentSaveFile)
+		}
 	}
 	if TV_Get(A_EventInfo, "Bold")
 	{
@@ -454,7 +484,7 @@ else
 	{
 		GuiControl,,MainDescriptionText, %SelectedProjectDescription%
 		GuiControl,,MainPropertiesText, Title: %SelectedProjectTitle%`nCreator: %CurrentUser%`nDate: %SelectedProjectDate%`nLast Change: %SelectedProjectLastChange%
-		GuiControl,,NotesListBox, |
+		;GuiControl,,NotesListBox, |
 	}
 }
 return
@@ -666,6 +696,11 @@ if A_GuiEvent = Normal
 return
 
 TagsButton:
+if NewNoteTrigger = 0
+{
+	MsgBox 16, Notes, Tags have been already asign to  this note!
+	return
+}
 gui, TagSelector:New, ToolWindow, Tag Selector
 gui, Add, Text,, Select the tag(s) for this update:
 Gui, Font, s11
@@ -710,6 +745,10 @@ Loop,
 }
 return
 
+SavePictures:
+Menu, OtherMenu, ToggleCheck, Save Pictures when detected
+return
+
 SaveUpdate:
 gui, Submit, NoHide
 IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
@@ -745,14 +784,13 @@ Loop, Parse, TaskList, `|
 }
 IniRead, CurrentProgress, %CurrentSaveFile%, %TVItemParentName%, ProgressTracker%TaskNumber%
 TotalProgress := CurrentProgress + ProgressAddPercent
-;MsgBox, %CurrentProgress% %ProgressAddPercent% %TotalProgress%
 IniWrite, %TotalProgress%, %CurrentSaveFile%, %TVItemParentName%, ProgressTracker%TaskNumber%
 FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TVItemName%
-FileRead, UpdateTags, %A_Temp%\ProgressTracker\stags.temp
-Loop, Parse, UpdateTags, |
-{
-	AddToTagDir(A_LoopField,TVItemName,UpdateTitle,TagFilePath,1)
-}
+;FileRead, UpdateTags, %A_Temp%\ProgressTracker\stags.temp
+;Loop, Parse, UpdateTags, |
+;{
+;	AddToTagDir(A_LoopField,TVItemName,UpdateTitle,TagFilePath,1)
+;}
 WriteUpdate(UpdateTitle,UpdateDescription,UpdateTags,FullUpdateFile)
 Sleep 250
 RefreshUpdateList(TVItemName,SavedProgramName,TVItemParentName,CurrentSaveFile)
