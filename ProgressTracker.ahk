@@ -2,6 +2,7 @@
 Codename=ProgressTracker
 CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
 Temp_File=0 ; Check to see if the current file is a temp file
+ImgSaveTrigger=0
 SaveLocation=%A_MyDocuments%\ProgressTracker\ProgramData ; Default save location
 MyDocumentsDataPath=%A_MyDocuments%\ProgressTracker
 FormatTime, LocalTime,,ShortDate
@@ -9,6 +10,7 @@ FormatTime, LocalTime,,ShortDate
 ;#Warn  ; Enable warnings to assist with detecting common errors.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+DetectHiddenWindows, On 
 #SingleInstance,Force
 #Include TrackerFunctions.ahk
 #Include csv.ahk
@@ -63,7 +65,7 @@ Menu, RemindersMenu, Add, &View Reminders, OpenReminderMenu
 Menu, OtherMenu, Add, Save a &Link`tCtrl+L, SaveLink
 Menu, OtherMenu, Add, Attach a &File`tCtrl+F, AttachFile
 Menu, OtherMenu, Add, Open Tags Menu, OpenTags
-Menu, OtherMenu, Add, Save Pictures when detected, SavePictures
+Menu, OtherMenu, Add, Automatically Save Pictures, SavePictures
 
 Menu, HelpMenu, Add, About, MenuAbout
 
@@ -106,7 +108,7 @@ Gui, Add, Text,x647 y370, `%
 Gui, Add, Button,x775 y366 vSaveUpdate gSaveUpdate , Save Update
 Gui, Add, ListBox, gNotesListBox vNotesListBox x291 y435 w175 r12
 Gui, Add, ListBox, gReminderListBox vReminderListBox x496 y435 w170 r12
-Gui, Add, ListBox, gOtherListBox vOtherListBox x695 y435 w175 r12
+Gui, Add, ListBox, gMiscListBox vMiscListBox x695 y435 w175 r12
 Gui, Add, StatusBar,,
 SB_SetParts(500,400)
 SB_SetText("Upcoming Reminder:", 1)
@@ -177,6 +179,10 @@ else
 LoadSaveFile:
 IniWrite, %CurrentSaveFile%, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+; // Saving the program name in a temp file for later use
+FileDelete, %A_Temp%\ProgressTracker\cprogram.tmp
+FileAppend, %SavedProgramName%, %A_Temp%\ProgressTracker\cprogram.tmp
+; \\
 TagFilePath=%A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Tags.ptl ; Default location of tag list file, this could be changed to a variable so the user can have multiple tag lists or load one from another user
 IniRead, ProgramDescription, %CurrentSaveFile%, ProgramInfo, ProgramDescription
 IniRead, ProjectList, %CurrentSaveFile%, ProgramInfo, Projects
@@ -363,6 +369,11 @@ if ErrorLevel = 1
 {
 	return
 }
+If NoteFileName = 
+{
+	MsgBox 16, Warning, Item Name cannot be empty!
+	return
+}
 IniRead, CurrentNoteList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TVItemName%.ptl, NoteInfo, NoteList
 IfInString, CurrentNoteList, NoteFileName
 {
@@ -394,6 +405,27 @@ return
 AttachFile:
 return
 OpenTags:
+return
+
+SavePictures:
+if ImgSaveTrigger = 0
+{
+	Run, SavingImage.ahk,, UseErrorLevel
+	if ErrorLevel = ERROR
+	{
+		Msgbox 16, ERROR, An error has occured!
+		return
+	}
+	ImgSaveTrigger = 1
+	Menu, OtherMenu, ToggleCheck, Automatically Save Pictures
+	return
+}
+if ImgSaveTrigger = 1
+{
+	WinClose, %A_WorkingDir%\SavingImage.ahk ahk_class AutoHotkey
+	Menu, OtherMenu, ToggleCheck, Automatically Save Pictures
+	TrayTip, Progress Tracker, No longer detecting image addresses
+}
 return
 
 MenuAbout:
@@ -745,10 +777,6 @@ Loop,
 }
 return
 
-SavePictures:
-Menu, OtherMenu, ToggleCheck, Save Pictures when detected
-return
-
 SaveUpdate:
 gui, Submit, NoHide
 IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
@@ -826,11 +854,21 @@ return
 
 ReminderListBox:
 return
-OtherListBox:
+
+MiscListBox:
+gui, Submit, NoHide
+if A_GuiEvent = DoubleClick
+{
+	TVItemID := TV_GetSelection()
+	TV_GetText(TVItemName, TVItemID)
+	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+	StringReplace, IMGPath, MiscListBox, `:,-
+	Run, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\%IMGPath%
+}
 return
 
 ProgressTrackerGuiClose:
-MsgBox 52, Warning, All progress that has not been saved will be lost. `nAre you sure?
+MsgBox 52, Warning, All data that has not been saved will be lost. `nAre you sure?
 IfMsgBox No
 {
 	return
@@ -842,7 +880,7 @@ else
 
 NotesGuiClose:
 Gui, -AlwaysOnTop
-MsgBox 52, Warning, All progress that has not been saved will be lost. `nAre you sure?
+MsgBox 52, Warning, All data that has not been saved will be lost. `nAre you sure?
 IfMsgBox No
 {
 	Gui, +AlwaysOnTop
@@ -855,7 +893,7 @@ else
 }
 
 GuiClose:
-MsgBox 52, Warning, All progress that has not been saved will be lost. `nAre you sure?
+MsgBox 52, Warning, All data that has not been saved will be lost. `nAre you sure?
 IfMsgBox No
 {
 	return

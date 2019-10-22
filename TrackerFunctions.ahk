@@ -1,10 +1,5 @@
 ; /// Tracker Library ///
 
-BoiBox(DebugText)
-{
-	MsgBox, BOI`n%DebugText%
-}
-
 DisableAllGui()
 {
 	WinGet, ActiveControlList, ControlList, A
@@ -79,6 +74,10 @@ TreeViewLoader(ParentProgram,ProjectChildren,SaveFile)
 TaskLoader(Selected,ParentName,TaskList,SaveFile)
 {
 	global
+	; // Saving the program name in a temp file for later use
+	FileDelete, %A_Temp%\ProgressTracker\citem.tmp
+	FileAppend, %Selected%, %A_Temp%\ProgressTracker\citem.tmp
+	; \\
 	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 	Loop, Parse, TaskList, `|
 	{
@@ -108,6 +107,7 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 			IniRead, SelectedTaskLastChange, %SaveFile%, %ParentName%, LastChange
 			GuiControl,,MainPropertiesText, Title: %SelectedTaskTitle%`nCreator: %CurrentUser%`nDate: %SelectedTaskDate%`nLast Change: %SelectedTaskLastChange%
 			IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+			;// Loading Task Updates
 			UpdateListPath=%A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedTaskTitle%.ptl
 			CSV_Load(UpdateListPath,"UpdateListCSV",",")
 			UpdateAmount:=CSV_TotalRows("UpdateListCSV")
@@ -123,6 +123,8 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 				LV_Add("",UpdateListTitle,UpdateListPercentage,UpdateListTime,UpdateListConvertedTime,UpdateListUpdateFile)
 				LV_ModifyCol(3, "SortDesc")
 			}
+			;\\
+			;// Loading Task Notes
 			GuiControl,,NotesListBox, |
 			IniRead, NoteList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%SelectedTaskTitle%.ptl, NoteInfo, NoteList
 			Loop, parse, NoteList, `|
@@ -133,6 +135,19 @@ TaskLoader(Selected,ParentName,TaskList,SaveFile)
 				}
 				GuiControl,,NotesListBox, %A_LoopField%
 			}
+			;\\
+			;// Loading Task Misc
+			GuiControl,, MiscListBox, |
+			IniRead, MiscList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%SelectedTaskTitle%.ptl, MiscInfo, MiscList
+			Loop, parse, MiscList, `|
+			{
+				if A_LoopField = ERROR
+				{
+					Break
+				}
+				GuiControl,, MiscListBox, %A_LoopField%
+			}
+			;\\
 		}
 		if Selected = %SavedProgramName%
 		{
@@ -176,6 +191,7 @@ ProjectLoader(ProjectName,SaveFile)
 	}
 	GuiControl,+Range0-%TaskProgressTotalRange%, ProgressBar
 	GuiControl,, ProgressBar, %ProgressSum%
+	;// Loading Task Notes
 	GuiControl,,NotesListBox, |
 	IniRead, NoteList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%ProjectName%.ptl, NoteInfo, NoteList
 	Loop, parse, NoteList, `|
@@ -186,6 +202,19 @@ ProjectLoader(ProjectName,SaveFile)
 		}
 		GuiControl,,NotesListBox, %A_LoopField%
 	}
+	;\\
+	;// Loading Task Misc
+	GuiControl,,MiscListBox, |
+	IniRead, MiscList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%SelectedTaskTitle%.ptl, MiscInfo, MiscList
+	Loop, parse, MiscList, `|
+	{
+		if A_LoopField = ERROR
+		{
+			Break
+		}
+		GuiControl,, MiscListBox, %A_LoopField%
+	}
+	;\\
 }
 
 ProgramLoader()
@@ -260,6 +289,12 @@ DeleteTask(ProjectName,TaskName,SaveFile)
 				; The following deletes all update data so it doesn't conflict with a new task of the same name
 				FileRemoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TaskName%
 				FileDelete, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\%TaskName%.ptl
+				FileRemoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TaskName%
+				FileRemoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TaskName%
+				FileRemoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%TaskName%
+				FileRemoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK\%TaskName%
+				FileDelete, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TaskName%.ptl
+				FileDelete, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TaskName%.ptl
 			}
 		}
 	}
@@ -272,10 +307,13 @@ CreateNewFile(FileName,WhereToSave)
 	FileCreateDir, %WhereToSave%\%FileName%\Notes
 	FileCreateDir, %WhereToSave%\%FileName%\Reminders
 	FileCreateDir, %WhereToSave%\%FileName%\Updates
-	FileCreateDir, %WhereToSave%\%FileName%\Files
+	FileCreateDir, %WhereToSave%\%FileName%\Misc
+	FileCreateDir, %WhereToSave%\%FileName%\Misc\IMG
+	FileCreateDir, %WhereToSave%\%FileName%\Misc\LINK
+	FileCreateDir, %WhereToSave%\%FileName%\Misc\FILE
 	FormatTime, LocalTime, ,ShortDate
 	FileAppend ,[ProgramInfo]`nProgramName=%FileName%`nCreator=%A_UserName%`nCreatorVersion=`nProjects=`n[%FileName%]`nProjectTitle=%FileName%]`nProjectDescription=You can change this name/description by left clicking on this Program`nCreator=`nDate=%LocalTime%`nLastChange=`nProjectDescription=You can change this name/description by left clicking on this Program,%WhereToSave%\%FileName%\%FileName%.ptp
-}	
+}
 
 WriteNewProject(ProjectName,TaskCount,SaveFile)
 {
@@ -299,6 +337,9 @@ WriteNewTask(TaskName,ProjectName,SaveFile)
 	IniRead, SavedProgramName, %SaveFile%, ProgramInfo, ProgramName
 	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%TaskName%
 	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%TaskName%
+	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TaskName%
+	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%TaskName%
+	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK\%TaskName%
 }
 
 ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
@@ -326,16 +367,32 @@ ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 			}
 		}
 		StringReplace, TaskList, TaskList, %SelectedItem%, %NewItemName%
+		;// Changing task name inside Tag File
+		FileRead, TempTagFile, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Tags.ptl
+		StringReplace, TempTagFile, TempTagFile, %SelectedItem%, %NewItemName%, All
+		FileDelete, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Tags.ptl
+		FileAppend, %TempTagFile%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Tags.ptl
+		;\\
 		IniWrite, %TaskList%, %SaveFile%, %ProjectName%, Tasks
 		IniRead, SavedProgramName, %SaveFile%, ProgramInfo, ProgramName
 		FileMove, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedItem%.ptl, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%NewItemName%.ptl, 1
 		FileMoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedItem%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%NewItemName%, R
+		FileMove, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%SelectedItem%.ptl, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%NewItemName%.ptl, R
+		FileMoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%SelectedItem%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%NewItemName%, R
+		FileMoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%SelectedItem%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%NewItemName%, R
+		FileMoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK\%SelectedItem%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK\%NewItemName%, R
 		IniWrite, %LocalTime%, %SaveFile%, %ProjectName%, LastChange
 	}
 	if ProjectOrTask = 0
 	{
 		IniRead, ProjectList, %SaveFile%, ProgramInfo, Projects
 		StringReplace, ProjectList, ProjectList, %SelectedItem%, %NewItemName%
+		;// Changing task name inside Tag File
+		FileRead, TempTagFile, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Tags.ptl
+		StringReplace, TempTagFile, TempTagFile, %SelectedItem%, %NewItemName%, All
+		FileDelete, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Tags.ptl
+		FileAppend, %TempTagFile%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Tags.ptl
+		;\\
 		IniWrite, %ProjectList%, %SaveFile%, ProgramInfo, Projects
 		FileRead, SaveFileString, %SaveFile%
 		StringReplace, SaveFileString, SaveFileString, %SelectedItem%, %NewItemName%
@@ -343,6 +400,12 @@ ChangeName(SelectedItem,ProjectName,SaveFile,ProjectOrTask)
 		FileAppend, %SaveFileString%, %SaveFile%
 		IniWrite, %NewItemName%, %SaveFile%, %NewItemName%, ProjectTitle
 		IniWrite, %LocalTime%, %SaveFile%, %NewItemName%, LastChange
+		FileMove, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedItem%.ptl, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%NewItemName%.ptl, 1
+		FileMoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%SelectedItem%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Updates\%NewItemName%, R
+		FileMove, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%SelectedItem%.ptl, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%NewItemName%.ptl, R
+		FileMoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%SelectedItem%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%NewItemName%, R
+		FileMoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%SelectedItem%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%NewItemName%, R
+		FileMoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK\%SelectedItem%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK\%NewItemName%, R
 	}
 	if ProjectOrTask = 2
 	{
@@ -404,6 +467,11 @@ RefreshNoteList(SelectedItem)
 		GuiControl,,NotesListBox, %A_LoopField%
 	}
 	return
+}
+
+RefreshMiscList()
+{
+	
 }
 
 LoadTags(TagFile)
