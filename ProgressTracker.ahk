@@ -862,8 +862,20 @@ if A_GuiEvent = DoubleClick
 	TVItemID := TV_GetSelection()
 	TV_GetText(TVItemName, TVItemID)
 	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
-	StringReplace, IMGPath, MiscListBox, `:,-
-	Run, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\%IMGPath%
+	IfInString, MiscListBox, IMG
+	{
+		StringReplace, IMGPath, MiscListBox, `:,-
+		Run, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\%IMGPath%
+		return
+	}
+	IfInString, MiscListBox, LINK
+	{
+		;// Placeholder
+	}
+	ifInString, MiscListBox, FILE
+	{
+		;// Placeholder
+	}
 }
 return
 
@@ -875,6 +887,7 @@ IfMsgBox No
 }
 else
 {
+	WinClose, %A_WorkingDir%\SavingImage.ahk ahk_class AutoHotkey
 	ExitApp
 }
 
