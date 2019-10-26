@@ -12,6 +12,7 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 DetectHiddenWindows, On 
 #SingleInstance,Force
+#Persistent
 #Include TrackerFunctions.ahk
 #Include csv.ahk
 #Include Class_RichEdit.ahk
@@ -65,7 +66,6 @@ Menu, RemindersMenu, Add, &View Reminders, OpenReminderMenu
 Menu, OtherMenu, Add, Save a &Link`tCtrl+L, SaveLink
 Menu, OtherMenu, Add, Attach a &File`tCtrl+F, AttachFile
 Menu, OtherMenu, Add, Open Tags Menu, OpenTags
-Menu, OtherMenu, Add, Automatically Save Pictures, SavePictures
 
 Menu, HelpMenu, Add, About, MenuAbout
 
@@ -114,7 +114,6 @@ SB_SetParts(500,400)
 SB_SetText("Upcoming Reminder:", 1)
 SB_SetText("Upcoming Deadline:", 2)
 Gui, Tab
-
 Gui, Show
 Goto LoadSaveFile ;Goes to LoadSaveFile so it has a file already open when the program starts
 return
@@ -193,6 +192,49 @@ GuiControl,,MainDescriptionText, Double Click on an item to view more
 GuiControl,,MainPropertiesText, Double Click on an item to view more
 EnableAllGui()
 EnableAllMenus()
+;// Loads Save Image feature
+OnClipboardChange("ChangeItUp")
+ChangeItUp()
+{
+	IfInString, Clipboard, .jpg
+	{
+		MsgBox 4, Save Picture,Would you like to saved picture to the current Task/Project?
+		IfMsgBox, Yes
+		{
+			if ImgDescriptorTrigger = 1
+			{
+				MsgBox 16, Warning, Image Descriptor window is already open!
+				return
+			}
+			ImageAddress := Clipboard
+			TempIMG = %A_Temp%/ProgressTracker/tempimg.jpg
+			UrlDownloadToFile, %ImageAddress%, %TempIMG%
+			ImgDescriptorTrigger = 1
+			OpenImageDescriptor(TempIMG)
+			return
+		}
+	}
+	IfInString, Clipboard, .png
+	{
+		MsgBox 4, Save Picture,Would you like to saved picture to the current Task/Project?
+		IfMsgBox, Yes
+		{
+			if ImgDescriptorTrigger = 1
+			{
+				MsgBox 16, Warning, Image Descriptor window is already open!
+				return
+			}
+			ImageAddress := Clipboard
+			TempIMG = %A_Temp%/ProgressTracker/tempimg.png
+			UrlDownloadToFile, %ImageAddress%, %TempIMG%
+			ImgDescriptorTrigger = 1
+			OpenImageDescriptor(TempIMG)
+			return
+		}
+	}
+	; FileAppend, %ClipboardAll%, %A_MyDocuments%\ProgressTracker\bruh.jpg
+}
+;\\
 return
 
 MenuFileSaveAs:
@@ -238,6 +280,14 @@ gui, Submit
 return
 
 CreateNote:
+SelectedTVItemID := TV_GetSelection()
+TV_GetText(TVItemName,SelectedTVItemID)
+IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+If TVItemName = %SavedProgramName%
+{
+	MsgBox 16, Warning, You can't save notes on a Program`nPlease select a Task or a Project first!
+	return
+}
 IfWinExist, Notes
 {
 	MsgBox 16, Warning, Notes window is already open!
@@ -405,27 +455,6 @@ return
 AttachFile:
 return
 OpenTags:
-return
-
-SavePictures:
-if ImgSaveTrigger = 0
-{
-	Run, SavingImage.ahk,, UseErrorLevel
-	if ErrorLevel = ERROR
-	{
-		Msgbox 16, ERROR, An error has occured!
-		return
-	}
-	ImgSaveTrigger = 1
-	Menu, OtherMenu, ToggleCheck, Automatically Save Pictures
-	return
-}
-if ImgSaveTrigger = 1
-{
-	WinClose, %A_WorkingDir%\SavingImage.ahk ahk_class AutoHotkey
-	Menu, OtherMenu, ToggleCheck, Automatically Save Pictures
-	TrayTip, Progress Tracker, No longer detecting image addresses
-}
 return
 
 MenuAbout:
@@ -879,6 +908,73 @@ if A_GuiEvent = DoubleClick
 }
 return
 
+SaveImage:
+Gui, Submit
+ImgDescriptorTrigger = 0
+TVItemID := TV_GetSelection()
+TV_GetText(TVItemName, TVItemID)
+IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+IniRead, CurrentMiscList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
+IfInString, CurrentMiscList, ImgName
+{
+	MsgBox 16, ERROR, There is already an image with that name!
+	return
+}
+If ImgName = 
+{
+	MsgBox 16, Warning, Item Name cannot be empty!
+	return
+}
+ifInString, ImageAddress, .jpg
+{
+	UrlDownloadToFile, %Clipboard%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\IMG-%ImgName%.jpg
+	if CurrentMiscList = ERROR
+	{
+		IniWrite, IMG:%ImgName%.jpg, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
+	}
+	else
+	{
+		IniWrite, IMG:%ImgName%.jpg|%CurrentMiscList%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
+	}
+	IniWrite, %ImgName%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\IMG-%ImgName%.ptd, ImageInfo, Name
+	IniWrite, %ImgDesc%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\IMG-%ImgName%.ptd, ImageInfo, Description
+	;// Adding Tags
+	FullImgName = IMG-%ImgName%.jpg
+	FileRead, Stags, %A_Temp%\ProgressTracker\stags.temp
+	IniWrite, %Stags%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\IMG-%ImgName%.ptd, ImageInfo, Tags
+	Loop, Parse, Stags, |
+	{
+		AddToTagDir(A_LoopField,TVItemName,FullImgName,TagFilePath,4)
+	}
+	;\\
+	MsgBox,,Image Saved, Image %ImgName%.jpg saved
+}
+IfInString, Clipboard, .png
+{
+	UrlDownloadToFile, %Clipboard%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\IMG-%imgname%.png
+	if CurrentMiscList = ERROR
+	{
+		IniWrite, IMG:%imgname%.png, %A_MyDocuments%\ProgressTracker\ProgramData\%SaveCurrentNote%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
+	}
+	else
+	{
+		IniWrite, IMG:%imgname%.png|%CurrentMiscList%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
+	}
+	IniWrite, %ImgName%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\IMG-%ImgName%.ptd, ImageInfo, Name
+	IniWrite, %ImgDesc%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\IMG-%ImgName%.ptd, ImageInfo, Description
+	;// Adding Tags
+	FullImgName = IMG-%ImgName%.png
+	FileRead, Stags, %A_Temp%\ProgressTracker\stags.temp
+	IniWrite, %Stags%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\IMG-%ImgName%.ptd, ImageInfo, Tags
+	Loop, Parse, Stags, |
+	{
+		AddToTagDir(A_LoopField,TVItemName,FullImgName,TagFilePath,4)
+	}
+	;\\
+	MsgBox,,Image Saved, Image %imgname%.png saved!
+}
+return
+
 ProgressTrackerGuiClose:
 MsgBox 52, Warning, All data that has not been saved will be lost. `nAre you sure?
 IfMsgBox No
@@ -905,6 +1001,20 @@ else
 	return
 }
 
+ImageDescriptorGuiClose:
+{
+	IfMsgBox No
+	{
+		return
+	}
+	else
+	{
+		ImgDescriptorTrigger = 0
+		Gui, Destroy
+		return
+	}
+}
+
 GuiClose:
 MsgBox 52, Warning, All data that has not been saved will be lost. `nAre you sure?
 IfMsgBox No
@@ -913,5 +1023,5 @@ IfMsgBox No
 }
 else
 {
-	ExitApp
+	Gui, Destroy
 }

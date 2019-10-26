@@ -220,6 +220,7 @@ ProjectLoader(ProjectName,SaveFile)
 ProgramLoader()
 {
 	LV_Delete()
+	GuiControl,, ProgressBar, 0
 	GuiControl,, UpdateTitle, Update Title
 	GuiControl,, UpdateDescription, Update Description
 	GuiControl,Disable, UpdateListView
@@ -502,7 +503,7 @@ AddNewTag(TagFile)
 	IniWrite, %CurrentTags%|%NewTagName%, %TagFile%, TagInfo, Tags
 }
 
-AddToTagDir(TagToAdd,ParentName,ItemName,TagFile,TagHolder)
+AddToTagDir(TagToAdd,ParentName,DataName,TagFile,TagHolder)
 {
 	IniRead, TagList, %TagFile%, TagInfo, Tags
 	Loop, Parse, TagList, |
@@ -517,11 +518,11 @@ AddToTagDir(TagToAdd,ParentName,ItemName,TagFile,TagHolder)
 		IniRead, TagTaskList, %TagFile%, Tag%TagNum%, tasks
 		if (TagTaskList ="")
 		{
-			IniWrite, %ItemName%`@%ParentName%, %TagFile%, Tag%TagNum%, tasks
+			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, tasks
 		}
 		else
 		{
-			IniWrite, %TagTaskList%|%ItemName%`@%ParentName%, %TagFile%, Tag%TagNum%, tasks
+			IniWrite, %TagTaskList%|%DataName%`@%ParentName%, %TagFile%, Tag%TagNum%, tasks
 		}
 	}
 	if TagHolder = 2
@@ -529,19 +530,19 @@ AddToTagDir(TagToAdd,ParentName,ItemName,TagFile,TagHolder)
 		IniRead, TagNoteList, %TagFile%, Tag%TagNum%, notes
 		if (TagNoteList = )
 		{
-			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, notes
+			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, notes
 		}
 		if (TagNoteList ="ERROR")
 		{
-			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, notes
+			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, notes
 		}
 		if (TagNoteList ="")
 		{
-			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, notes
+			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, notes
 		}
 		else
 		{
-			IniWrite, |%ItemName%`@%ParentName%, %TagFile%, Tag%TagNum%, notes
+			IniWrite, %TagNoteList%|%ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, notes
 		}
 	}
 	if TagHolder = 3
@@ -558,14 +559,40 @@ AddToTagDir(TagToAdd,ParentName,ItemName,TagFile,TagHolder)
 	}
 	if TagHolder = 4
 	{
-		IniRead, TagOtherList, %TagFile%, Tag%TagNum%, others
+		IniRead, TagMiscList, %TagFile%, Tag%TagNum%, misc
+		if (TagNoteList = )
+		{
+			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, misc
+		}
+		if (TagNoteList ="ERROR")
+		{
+			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, misc
+		}
 		if (TagOtherList ="")
 		{
-			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, others
+			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, misc
 		}
 		else
 		{
-			IniWrite, |%ItemName%, %TagFile%, Tag%TagNum%, others
+			IniWrite, %TagMiscList%|%ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, misc
 		}	
 	}
+}
+
+OpenImageDescriptor(ImageAddress)
+{
+	Global
+	gui, ImageDescriptor:New,, Image Descriptor
+	gui, +ToolWindow ; +AlwaysOnTop +Resize
+	gui, Add, GroupBox,w290 h290,Image
+	gui, Add, Picture,x15 y25 w280 h-1,%ImageAddress% 
+	gui, Add, GroupBox,x305 y6 w305 h290,Info
+	gui, Font, s10
+	gui, Add, Text, x315 y25, Name:
+	gui, Add, Edit, yp-2 xp+42 w243 vImgName
+	gui, Add, Text, x315 yp+30 , Description:
+	gui, Add, Edit, w285 h180 yp+20 vImgDescription
+	gui, Add, Button,w220 gSaveImage,Save Image
+	gui, Add, Button, xp+220 yp w66 gTagsButton,Tags
+	gui, Show, w620 h300, Image Descriptor
 }
