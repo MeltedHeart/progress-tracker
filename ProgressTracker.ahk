@@ -196,8 +196,10 @@ EnableAllMenus()
 OnClipboardChange("ChangeItUp")
 ChangeItUp()
 {
+	Global
 	IfInString, Clipboard, .jpg
 	{
+		SImageFormat = JPG
 		MsgBox 4, Save Picture,Would you like to saved picture to the current Task/Project?
 		IfMsgBox, Yes
 		{
@@ -206,7 +208,6 @@ ChangeItUp()
 				MsgBox 16, Warning, Image Descriptor window is already open!
 				return
 			}
-			ImageAddress := Clipboard
 			TempIMG = %A_Temp%/ProgressTracker/tempimg.jpg
 			UrlDownloadToFile, %ImageAddress%, %TempIMG%
 			ImgDescriptorTrigger = 1
@@ -216,6 +217,7 @@ ChangeItUp()
 	}
 	IfInString, Clipboard, .png
 	{
+		SImageFormat = PNG
 		MsgBox 4, Save Picture,Would you like to saved picture to the current Task/Project?
 		IfMsgBox, Yes
 		{
@@ -224,7 +226,6 @@ ChangeItUp()
 				MsgBox 16, Warning, Image Descriptor window is already open!
 				return
 			}
-			ImageAddress := Clipboard
 			TempIMG = %A_Temp%/ProgressTracker/tempimg.png
 			UrlDownloadToFile, %ImageAddress%, %TempIMG%
 			ImgDescriptorTrigger = 1
@@ -910,11 +911,17 @@ return
 
 SaveImage:
 Gui, Submit
+;MsgBox, %ImgName% %SImageFormat%
 ImgDescriptorTrigger = 0
 TVItemID := TV_GetSelection()
 TV_GetText(TVItemName, TVItemID)
 IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 IniRead, CurrentMiscList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
+if TVItemName = %SavedProgramName%
+{
+	MsgBox 16, ERROR, You cannot save a misc item to a Program!`nSelect a Task/Project and try again!
+	return
+}
 IfInString, CurrentMiscList, ImgName
 {
 	MsgBox 16, ERROR, There is already an image with that name!
@@ -925,7 +932,7 @@ If ImgName =
 	MsgBox 16, Warning, Item Name cannot be empty!
 	return
 }
-ifInString, ImageAddress, .jpg
+if SImageFormat = JPG
 {
 	UrlDownloadToFile, %Clipboard%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\IMG-%ImgName%.jpg
 	if CurrentMiscList = ERROR
@@ -949,7 +956,7 @@ ifInString, ImageAddress, .jpg
 	;\\
 	MsgBox,,Image Saved, Image %ImgName%.jpg saved
 }
-IfInString, Clipboard, .png
+If SImageFormat = PNG
 {
 	UrlDownloadToFile, %Clipboard%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\IMG-%imgname%.png
 	if CurrentMiscList = ERROR

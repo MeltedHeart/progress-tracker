@@ -231,11 +231,13 @@ ProgramLoader()
 	GuiControl,Disable, ProgressAddPercent
 	GuiControl,Disable, PercentEdit
 	GuiControl,,NotesListBox, |
+	GuiControl,,MiscListBox, |
 	return
 }
 
 DeleteProject(ProjectName,SaveFile)
 {
+	IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
 	IniRead, ProjectList, %SaveFile%, ProgramInfo, Projects
 	PipeProjectName=|%ProjectName%
 	StringReplace, ProjectList, ProjectList, %PipeProjectName%,, All
@@ -250,6 +252,10 @@ DeleteProject(ProjectName,SaveFile)
 	}
 	IniWrite, %ProjectList%, %SaveFile%, ProgramInfo, Projects
 	IniDelete, %SaveFile%,%ProjectName%
+	FileRemoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%ProjectName%
+	FileRemoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%ProjectName%
+	FileRemoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%ProjectName%
+	FileRemoveDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK%ProjectName%
 }
 
 DeleteTask(ProjectName,TaskName,SaveFile)
@@ -322,6 +328,9 @@ WriteNewProject(ProjectName,TaskCount,SaveFile)
 	FormatTime, LocalTime,,ShortDate
 	FileAppend,`n[%ProjectName%]`nProjectTitle=%ProjectName%`nCreator=%A_User%`nDate=%LocalTime%`nLastChange=%LocalTime%`nProjectDescription=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProjectNotes=`nProjectReminder=`nTasks= New Task %TaskCount%`nTask1=New Task %TaskCount%`nTaskDescription1=You can change this name/description by left clicking on this project and selecting Change Description/Change Name`nProgressTracker1=0,%SaveFile%
 	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Notes\%ProjectName%
+	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%ProjectName%
+	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%ProjectName%
+	FileCreateDir, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK%ProjectName%
 }
 
 WriteNewTask(TaskName,ProjectName,SaveFile) 
