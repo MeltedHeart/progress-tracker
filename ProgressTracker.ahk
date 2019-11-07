@@ -37,13 +37,27 @@ CreateNewFile("New File",CurrentSaveFile)
 IniWrite, %A_Temp%\ProgressTracker\New_File.ptp, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 IniWrite, 0, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewProjectCount
 IniWrite, 0, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
+IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, ShowAddConfirmation
+IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, ChromeDefault
+IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, NotesAOT
+IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, SaveFiles
+IniRead, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AutoSaveIMG
+IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AskScrn
 Goto ReadSettingsIni
 return
 
 ReadSettingsIni: ;Reads the settings file
 IniRead, LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
-IniRead, NewProjectCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewCount
+IniRead, NewProjectCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewProjectCount
+IniRead, NewTaskCount, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, NewTaskCount
+IniRead, ShowAddConfirmation, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, ShowAddConfirmation
+IniRead, ChromeDefault, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, ChromeDefault
+IniRead, NotesAOT, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, NotesAOT
+IniRead, SaveFiles, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, SaveFiles
+IniRead, SAutoSaveIMG, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AutoSaveIMG
+IniRead, AskScrn, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AskScrn
 CurrentSaveFile=%LastOpenProgram% ; Set the Current Save File as the last opened one
+
 ; Creating the GUI
 Gui, ProgressTracker:New,, Progress Tracker
 Gui, ProgressTracker:Default
@@ -258,11 +272,11 @@ gui, Settings:New,, Settings
 gui, +ToolWindow
 Gui, Add, Tab3, x12 y9 w330 h250 , General|Paths|Collaboration|Update|Developer
 Gui, Tab, 1
-Gui, Add, CheckBox, Checked vWarnPopUp, Show a message box when closing data windows, confirming `ninputs and/or editing items
+Gui, Add, CheckBox, vWarnPopUp, Show a message box when closing data windows, confirming `ninputs and/or editing items
 Gui, Add, CheckBox, vChromeDefault, Use Chrome as default browser
 Gui, Add, CheckBox, vNotesAlwaysOnTop, Open notes will always be on top by default
 Gui, Add, CheckBox, vSaveFileBackup, Save/Backup attached files inside Task folder
-Gui, Add, CheckBox, vSaveScreenshot, Save Screenshots to latest task/project
+Gui, Add, CheckBox, vAutoSaveIMG, Save image when copying its address?
 Gui, Add, CheckBox, vSaveScreenshotAsk, Ask before saving screenshot
 Gui, Tab, 2
 Gui, Add, Text,, Tag List Path:
@@ -273,11 +287,117 @@ FormatTime, LocalTime,,ShortDate
 Gui, Add, Edit, +ReadOnly,%A_Now% - %LocalTime%
 Gui, Tab
 Gui, Add, Button, gSaveSettings x12 y269 w330 h30 , Save Settings
+;// Checking Settings
+IniRead, ShowAddConfirmation, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, ShowAddConfirmation
+IniRead, ChromeDefault, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, ChromeDefault
+IniRead, NotesAOT, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, NotesAOT
+IniRead, SaveFiles, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, SaveFiles
+IniRead, SAutoSaveIMG, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AutoSaveIMG
+IniRead, AskScrn, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AskScrn
+;// Correcting Settings
+if ShowAddConfirmation = Yes
+{
+	GuiControl,, WarnPopUp, 1
+}
+if ShowAddConfirmation = No
+{
+	GuiControl,, WarnPopUp, 0
+}
+if ChromeDefault = Yes
+{
+	GuiControl,, ChromeDefault, 1
+}
+if ChromeDefault = No
+{
+	GuiControl,, ChromeDefault, 0
+}
+if NotesAOT = Yes
+{
+	GuiControl,, NotesAlwaysOnTop, 1
+}
+if NotesAOT = No
+{
+	GuiControl,, NotesAlwaysOnTop, 0
+}
+if SaveFiles = Yes
+{
+	GuiControl,, SaveFileBackup, 1
+}
+if SaveFiles = No
+{
+	GuiControl,, SaveFileBackup, 0
+}
+if SAutoSaveIMG = Yes
+{
+	GuiControl,, AutoSaveIMG, 1
+}
+if SAutoSaveIMG = No
+{
+	GuiControl,, AutoSaveIMG, 0
+}
+if AskScrn = Yes
+{
+	GuiControl,, SaveScreenshotAsk, 1
+}
+if AskScrn = No
+{
+	GuiControl,, SaveScreenshotAsk, 0
+}
+;\\
 Gui, Show
 return
 
 SaveSettings:
 gui, Submit
+if ShowAddConfirmation = 0
+{
+	IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, ShowAddConfirmation
+}
+if ShowAddConfirmation = 1
+{
+	IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, ShowAddConfirmation
+}
+if ChromeDefault = 0
+{
+	IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, ChromeDefault
+}
+if ChromeDefault = 1
+{
+	IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, ChromeDefault
+}
+if NotesAOT = 0
+{
+	IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, NotesAOT
+}
+if NotesAOT = 1
+{
+	IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, NotesAOT
+}
+if SaveFiles = 0
+{
+	IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, SaveFiles
+}
+if SaveFiles = 1
+{
+	IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, SaveFiles
+}
+if SAutoSaveIMG = 0
+{
+	IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, SAutoSaveIMG
+}
+if SAutoSaveIMG = 1
+{
+	IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, SAutoSaveIMG
+}
+if AskScrn = 0
+{
+	IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AskScrn
+}
+if AskScrn = 1
+{
+	IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AskScrn
+}
+MsgBox,,Settings, Settings have been saved! Restart to reload settings, 5
 return
 
 CreateNote:

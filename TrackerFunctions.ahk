@@ -433,7 +433,7 @@ WriteUpdate(Title,Description,Tags,SaveFile)
 	IniWrite, %Title%, %SaveFile%, UpdateInfo, UpdateTitle
 	IniWrite, %A_Now%, %SaveFile%, UpdateInfo, UpdateTime
 	IniWrite, A_User, %SaveFile%, UpdateInfo, UpdateUser
-	IniWrite, %Tags%, %SaveFile%, UpdateInfo, UpdateTags
+	;IniWrite, %Tags%, %SaveFile%, UpdateInfo, UpdateTags
 	StringReplace, Description, Description, `n, |, All
 	IniWrite, %Description%, %SaveFile%, UpdateContent, UpdateDescription
 }
@@ -600,7 +600,7 @@ OpenImageDescriptor(ImageAddress)
 	gui, Add, Text, x315 y25, Name:
 	gui, Add, Edit, yp-2 xp+42 w243 vImgName
 	gui, Add, Text, x315 yp+30 , Description:
-	gui, Add, Edit, w285 h180 yp+20 vImgDescription
+	gui, Add, Edit, w285 h180 yp+20 vImgDesc
 	gui, Add, Button,w220 gSaveImage,Save Image
 	gui, Add, Button, xp+220 yp w66 gTagsButton,Tags
 	gui, Show, w620 h300, Image Descriptor
