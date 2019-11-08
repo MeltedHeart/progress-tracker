@@ -651,6 +651,8 @@ TagSearch:
 return
 
 OpenTags:
+TagMenuTrigger = 1
+Goto, TagsButton
 return
 
 MenuAbout:
@@ -964,7 +966,11 @@ Gui, Font, s11
 gui, Add, ListView, AltSubmit Checked w150 r8, Tag Name
 Gui, Font
 gui, Add, Button, w25 gAddTag, +
-gui, Add, Button, Default x35 y219 w125 gSaveSelectedTags, OK
+gui, Add, Button, Default x35 y219 w125 vSaveSelectedTags gSaveSelectedTags, OK
+if TagMenuTrigger = 1
+{
+	GuiControl, Disable, SaveSelectedTags
+}
 LoadTags(TagFilePath)
 gui, Show
 return
@@ -1191,6 +1197,11 @@ else
 	WinClose, %A_WorkingDir%\SavingImage.ahk ahk_class AutoHotkey
 	ExitApp
 }
+
+TagSelectorGuiClose:
+TagMenuTrigger = 0
+Gui, Destroy
+return
 
 NotesGuiClose:
 MsgBox 52, Warning, All data that has not been saved will be lost. `nAre you sure?
