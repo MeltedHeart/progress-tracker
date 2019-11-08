@@ -41,7 +41,8 @@ IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, Gener
 IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, ChromeDefault
 IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, NotesAOT
 IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, SaveFiles
-IniRead, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AutoSaveIMG
+IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, MiscItemMenu
+IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AutoSaveIMG
 IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AskScrn
 Goto ReadSettingsIni
 return
@@ -79,14 +80,17 @@ Menu, RemindersMenu, Add, &View Reminders, OpenReminderMenu
 
 Menu, OtherMenu, Add, Save a &Link`tCtrl+L, SaveLink
 Menu, OtherMenu, Add, Attach a &File`tCtrl+F, AttachFile
-Menu, OtherMenu, Add, Open Tags Menu, OpenTags
+
+Menu, TagMenuBar, Add, Search by Tag, TagSearch
+Menu, TagMenuBar, Add, Open Tags Menu, OpenTags
 
 Menu, HelpMenu, Add, About, MenuAbout
 
 Menu, MainMenuBar, Add, &File, :FileMenu
 Menu, MainMenuBar, Add, &Notes, :NotesMenu
 Menu, MainMenuBar, Add, &Reminders, :RemindersMenu
-Menu, MainMenuBar, Add, &Other, :OtherMenu
+Menu, MainMenuBar, Add, &Misc, :OtherMenu
+Menu, MainMenuBar, Add, &Tags, :TagMenuBar
 Menu, MainMenuBar, Add, &Help, :HelpMenu
 
 Gui, Menu, MainMenuBar
@@ -276,6 +280,7 @@ Gui, Add, CheckBox, vWarnPopUp, Show a message box when closing data windows, co
 Gui, Add, CheckBox, vChromeDefault, Use Chrome as default browser
 Gui, Add, CheckBox, vNotesAlwaysOnTop, Open notes will always be on top by default
 Gui, Add, CheckBox, vSaveFileBackup, Save/Backup attached files inside Task folder
+Gui, Add, CheckBox, vMiscItemMenu, Open Misc item info window first when selecting an item
 Gui, Add, CheckBox, vAutoSaveIMG, Save image when copying its address?
 Gui, Add, CheckBox, vSaveScreenshotAsk, Ask before saving screenshot
 Gui, Tab, 2
@@ -292,6 +297,7 @@ IniRead, ShowAddConfirmation, %A_MyDocuments%\ProgressTracker\ProgressTrackerSet
 IniRead, ChromeDefault, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, ChromeDefault
 IniRead, NotesAOT, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, NotesAOT
 IniRead, SaveFiles, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, SaveFiles
+IniRead, MiscItemMenu, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, MiscItemMenu
 IniRead, SAutoSaveIMG, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AutoSaveIMG
 IniRead, AskScrn, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AskScrn
 ;// Correcting Settings
@@ -326,6 +332,14 @@ if SaveFiles = Yes
 if SaveFiles = No
 {
 	GuiControl,, SaveFileBackup, 0
+}
+if MiscItemMenu = Yes
+{
+	GuiControl,, MiscItemMenu, 1
+}
+if MiscItemMenu = No
+{
+	GuiControl,, MiscItemMenu, 0
 }
 if SAutoSaveIMG = Yes
 {
@@ -380,6 +394,14 @@ if SaveFiles = 0
 if SaveFiles = 1
 {
 	IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, SaveFiles
+}
+if MiscItemMenu = 0
+{
+	IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, MiscItemMenu
+}
+if MiscItemMenu = 1
+{
+	IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, MiscItemMenu
 }
 if SAutoSaveIMG = 0
 {
@@ -571,10 +593,15 @@ CreateReminder:
 return
 OpenReminderMenu:
 return
+
 SaveLink:
 return
 AttachFile:
 return
+
+TagSearch:
+return
+
 OpenTags:
 return
 
