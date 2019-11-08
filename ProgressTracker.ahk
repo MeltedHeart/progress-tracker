@@ -106,7 +106,7 @@ Gui, Add, GroupBox, w600 h100, Current Progress
 Gui, Add, GroupBox, w600 h258, Updates
 Gui, Add, GroupBox, w195 h225, Notes
 Gui, Add, GroupBox, x485 y415 w190 h225, Reminders
-Gui, Add, GroupBox, x685 y415 w195 h225, Other
+Gui, Add, GroupBox, x685 y415 w195 h225, Misc
 Gui, Add, Progress, vProgressBar x300 y70 w560 h50, 1
 Gui, Font, s9
 Gui, Add, ListView, gUpdateListView vUpdateListView AltSubmit x290 y170 w235 h225, Title|`%|UCT|Date|File
@@ -595,7 +595,55 @@ OpenReminderMenu:
 return
 
 SaveLink:
+NewLinkWindow()
 return
+
+SaveLinkButton:
+gui, Submit
+LinkDescriptorTrigger = 0
+SelectedTVItemID := TV_GetSelection()
+TV_GetText(TVItemName,SelectedTVItemID)
+IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+IniRead, CurrentMiscList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
+if TVItemName = %SavedProgramName%
+{
+	MsgBox 16, ERROR, You cannot save a misc item to a Program!`nSelect a Task/Project and try again!
+	return
+}
+IfInString, CurrentMiscList, %LinkName%
+{
+	MsgBox 16, ERROR, There is already a link with that name!
+	return
+}
+If LinkName = 
+{
+	MsgBox 16, ERROR, Item Name cannot be empty!
+	return
+}
+if CurrentMiscList = ERROR
+{
+	IniWrite, LINK:%LinkName%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
+}
+else
+{
+	IniWrite, LINK:%LinkName%|%CurrentMiscList%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
+}
+IniWrite, %SelectedLink%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK\%TVItemName%\LINK-%LinkName%.ptd, LinkInfo, LinkAddress
+IniWrite, %LinkName%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK\%TVItemName%\LINK-%LinkName%.ptd, LinkInfo, Name
+StringReplace, LinkDesc, LinkDesc, `n, |, All
+IniWrite, %LinkDesc%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK\%TVItemName%\LINK-%LinkName%.ptd, LinkInfo, Description
+;// Adding Tags
+FullLinkName = LINK-%LinkName%
+FileRead, Stags, %A_Temp%\ProgressTracker\stags.temp
+IniWrite, %Stags%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK\%TVItemName%\LINK-%LinkName%.ptd, LinkInfo, Tags
+Loop, Parse, Stags, |
+{
+	AddToTagDir(A_LoopField,TVItemName,FullLinkName,TagFilePath,4)
+}
+;\\
+MsgBox,,Saved, Link Saved!
+return
+
 AttachFile:
 return
 
@@ -1047,7 +1095,9 @@ if A_GuiEvent = DoubleClick
 	}
 	IfInString, MiscListBox, LINK
 	{
-		;// Placeholder
+		StringReplace, MiscListBox, MiscListBox, `:, -
+		IniRead, LinkAddress, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\LINK\%TVItemName%\%MiscListBox%.ptd, LinkInfo, LinkAddress
+		Run, %LinkAddress%
 	}
 	ifInString, MiscListBox, FILE
 	{
@@ -1091,6 +1141,7 @@ if SImageFormat = JPG
 		IniWrite, IMG:%ImgName%.jpg|%CurrentMiscList%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
 	}
 	IniWrite, %ImgName%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\IMG-%ImgName%.ptd, ImageInfo, Name
+	StringReplace, ImgDesc, ImgDesc, `n, |, All
 	IniWrite, %ImgDesc%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\IMG\%TVItemName%\IMG-%ImgName%.ptd, ImageInfo, Description
 	;// Adding Tags
 	FullImgName = IMG-%ImgName%.jpg
@@ -1142,11 +1193,9 @@ else
 }
 
 NotesGuiClose:
-Gui, -AlwaysOnTop
 MsgBox 52, Warning, All data that has not been saved will be lost. `nAre you sure?
 IfMsgBox No
 {
-	Gui, +AlwaysOnTop
 	return
 }
 else
@@ -1157,6 +1206,7 @@ else
 
 ImageDescriptorGuiClose:
 {
+	MsgBox 52, Warning, All data that has not been saved will be lost. `nAre you sure?
 	IfMsgBox No
 	{
 		return
@@ -1164,6 +1214,21 @@ ImageDescriptorGuiClose:
 	else
 	{
 		ImgDescriptorTrigger = 0
+		Gui, Destroy
+		return
+	}
+}
+
+LinkDescriptorGuiClose:
+{
+	MsgBox 52, Warning, All data that has not been saved will be lost. `nAre you sure?
+	IfMsgBox No
+	{
+		return
+	}
+	else
+	{
+		LinkDescriptorTrigger = 0
 		Gui, Destroy
 		return
 	}

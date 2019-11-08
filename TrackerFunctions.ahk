@@ -529,7 +529,7 @@ AddToTagDir(TagToAdd,ParentName,DataName,TagFile,TagHolder)
 		IniRead, TagTaskList, %TagFile%, Tag%TagNum%, tasks
 		if (TagTaskList ="")
 		{
-			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, tasks
+			IniWrite, %DataName%`@%ParentName%, %TagFile%, Tag%TagNum%, tasks
 		}
 		else
 		{
@@ -541,19 +541,19 @@ AddToTagDir(TagToAdd,ParentName,DataName,TagFile,TagHolder)
 		IniRead, TagNoteList, %TagFile%, Tag%TagNum%, notes
 		if (TagNoteList = )
 		{
-			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, notes
+			IniWrite, %DataName%`@%ParentName%, %TagFile%, Tag%TagNum%, notes
 		}
 		if (TagNoteList ="ERROR")
 		{
-			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, notes
+			IniWrite, %DataName%`@%ParentName%, %TagFile%, Tag%TagNum%, notes
 		}
 		if (TagNoteList ="")
 		{
-			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, notes
+			IniWrite, %DataName%`@%ParentName%, %TagFile%, Tag%TagNum%, notes
 		}
 		else
 		{
-			IniWrite, %TagNoteList%|%ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, notes
+			IniWrite, %TagNoteList%|%DataName%`@%ParentName%, %TagFile%, Tag%TagNum%, notes
 		}
 	}
 	if TagHolder = 3
@@ -561,31 +561,31 @@ AddToTagDir(TagToAdd,ParentName,DataName,TagFile,TagHolder)
 		IniRead, TagReminderList, %TagFile%, Tag%TagNum%, reminders
 		if (TagReminderList ="")
 		{
-			IniWrite, %ItemName%, %TagFile%, Tag%TagNum%, reminders
+			IniWrite, %DataName%, %TagFile%, Tag%TagNum%, reminders
 		}
 		else
 		{
-			IniWrite, |%ItemName%, %TagFile%, Tag%TagNum%, reminders
+			IniWrite, |%DataName%, %TagFile%, Tag%TagNum%, reminders
 		}	
 	}
 	if TagHolder = 4
 	{
 		IniRead, TagMiscList, %TagFile%, Tag%TagNum%, misc
-		if (TagNoteList = )
+		if (TagMiscList = )
 		{
-			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, misc
+			IniWrite, %ItemName%`@%ParentName%, %TagFile%, Tag%TagNum%, misc
 		}
-		if (TagNoteList ="ERROR")
+		if (TagMiscList ="ERROR")
 		{
-			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, misc
+			IniWrite, %DataName%`@%ParentName%, %TagFile%, Tag%TagNum%, misc
 		}
-		if (TagOtherList ="")
+		if (TagMiscList ="")
 		{
-			IniWrite, %ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, misc
+			IniWrite, %DataName%`@%ParentName%, %TagFile%, Tag%TagNum%, misc
 		}
 		else
 		{
-			IniWrite, %TagMiscList%|%ItemName%`@%DataName%, %TagFile%, Tag%TagNum%, misc
+			IniWrite, %TagMiscList%|%DataName%`@%ParentName%, %TagFile%, Tag%TagNum%, misc
 		}	
 	}
 }
@@ -606,4 +606,21 @@ OpenImageDescriptor(ImageAddress)
 	gui, Add, Button, w220 gSaveImage,Save Image
 	gui, Add, Button, xp+220 yp w66 gTagsButton,Tags
 	gui, Show, w325 h300, Image Descriptor
+}
+
+NewLinkWindow()
+{
+	Global
+	gui, LinkDescriptor:New,, Link Descriptor
+	gui, +ToolWindow ; +AlwaysOnTop +Resize
+	Gui Font, s10
+	Gui Add, Text, x10 y7 w29 h23 +0x200, Link:
+	Gui Add, Edit, x43 y8 w326 h21 vSelectedLink
+	Gui Add, Text, x10 y33 w42 h23 +0x200, Name:
+	Gui Add, Edit, x54 y34 w315 h21 vLinkName
+	Gui Add, Text, x10 y57 w120 h23 +0x200, Description:
+	Gui Add, Edit, x10 y84 w357 h124 vLinkDesc
+	Gui Add, Button, x10 y215 w270 h23 gSaveLinkButton, Save
+	Gui Add, Button, x283 y215 w84 h23 gTagsButton, Tags
+	Gui Show, w378 h244, Link Descriptor
 }
