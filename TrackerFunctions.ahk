@@ -611,8 +611,8 @@ OpenImageDescriptor(ImageAddress)
 NewLinkWindow()
 {
 	Global
-	gui, LinkDescriptor:New,, Link Descriptor
-	gui, +ToolWindow ; +AlwaysOnTop +Resize
+	Gui, LinkDescriptor:New,, Link Descriptor
+	Gui, +ToolWindow ; +AlwaysOnTop +Resize
 	Gui Font, s10
 	Gui Add, Text, x10 y7 w29 h23 +0x200, Link:
 	Gui Add, Edit, x43 y8 w326 h21 vSelectedLink
@@ -623,4 +623,21 @@ NewLinkWindow()
 	Gui Add, Button, x10 y215 w270 h23 gSaveLinkButton, Save
 	Gui Add, Button, x283 y215 w84 h23 gTagsButton, Tags
 	Gui Show, w378 h244, Link Descriptor
+}
+
+NewFileWindow(ImportedFile)
+{
+	Global
+	Gui, FileDescriptor:New,, File Descriptor
+	Gui, +ToolWindow ; +AlwaysOnTop +Resize
+	Gui Font, s10
+	Gui Add, Text, x10 y7 w29 h23 +0x200, File:
+	Gui Add, Edit, x43 y8 w326 h21 vMiscFileAddress Disabled, %ImportedFile%
+	Gui Add, Text, x10 y33 w42 h23 +0x200, Name:
+	Gui Add, Edit, x54 y34 w315 h21 vMiscFileName
+	Gui Add, Text, x10 y57 w120 h23 +0x200, Description:
+	Gui Add, Edit, x10 y84 w357 h124 vMiscFileDesc
+	Gui Add, Button, x10 y215 w270 h23 gSaveFileButton, Save
+	Gui Add, Button, x283 y215 w84 h23 gTagsButton, Tags
+	Gui Show, w378 h244, File Descriptor
 }

@@ -44,6 +44,7 @@ IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, Gene
 IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, MiscItemMenu
 IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AutoSaveIMG
 IniWrite, Yes, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AskScrn
+;IniWrite, No, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, DevSettings, DarkMode
 Goto ReadSettingsIni
 return
 
@@ -57,6 +58,7 @@ IniRead, NotesAOT, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, 
 IniRead, SaveFiles, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, SaveFiles
 IniRead, SAutoSaveIMG, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AutoSaveIMG
 IniRead, AskScrn, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, AskScrn
+IniRead, DarkModeSwitch, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, DevSettings, DarkMode
 CurrentSaveFile=%LastOpenProgram% ; Set the Current Save File as the last opened one
 
 ; Creating the GUI
@@ -600,6 +602,7 @@ return
 
 SaveLinkButton:
 gui, Submit
+LinkName := RegExReplace(LinkName,"[^0-9xyz]","")
 LinkDescriptorTrigger = 0
 SelectedTVItemID := TV_GetSelection()
 TV_GetText(TVItemName,SelectedTVItemID)
@@ -612,7 +615,7 @@ if TVItemName = %SavedProgramName%
 }
 IfInString, CurrentMiscList, %LinkName%
 {
-	MsgBox 16, ERROR, There is already a link with that name!
+	MsgBox 16, ERROR, There is already a misc item with that name!
 	return
 }
 If LinkName = 
@@ -645,6 +648,83 @@ MsgBox,,Saved, Link Saved!
 return
 
 AttachFile:
+FileSelectFile, ImportedFile, S3,,Select a File
+if ErrorLevel = 1
+{
+	return
+}
+NewFileWindow(ImportedFile)
+return
+
+SaveFileButton:
+gui, Submit
+MiscFileName := RegExReplace(MiscFileName,"[^0-9xyz]","")
+FileDescriptorTrigger = 0
+SelectedTVItemID := TV_GetSelection()
+TV_GetText(TVItemName,SelectedTVItemID)
+IniRead, SavedProgramName, %CurrentSaveFile%, ProgramInfo, ProgramName
+IniRead, CurrentMiscList, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
+if TVItemName = %SavedProgramName%
+{
+	MsgBox 16, ERROR, You cannot save a misc item to a Program!`nSelect a Task/Project and try again!
+	return
+}
+IfInString, CurrentMiscList, %MiscFileName%
+{
+	MsgBox 16, ERROR, There is already a misc item with that name!
+	return
+}
+If MiscFileName = 
+{
+	MsgBox 16, ERROR, Item Name cannot be empty!
+	return
+}
+if CurrentMiscList = ERROR
+{
+	IniWrite, FILE:%MiscFileName%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
+}
+else
+{
+	IniWrite, FILE:%MiscFileName%|%CurrentMiscList%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\%TVItemName%.ptl, MiscInfo, MiscList
+}
+IniRead, SaveFiles, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, GeneralSettings, SaveFiles
+if SaveFiles = Yes
+{
+	FileCopy, %ImportedFile%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%TVItemName%
+	If ErrorLevel = 0
+	{
+		MsgBox 16, ERROR MISC-BF1, There has been an error trying to back up this file`nPlease try again!
+		return
+	}
+	SplitPath, %ImportedFile%, ImportedFileNameEXT
+	ImportedBackUpFile = %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%TVItemName%\%ImportedFileNameEXT%
+	if !FileExist(ImportedBackUpFile)
+	{
+		MsgBox 16, ERROR MISC-BF2, There has been an error trying to back up this file`nPlease try again!
+		return
+	}
+	IniWrite, %ImportedBackUpFile%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%TVItemName%\FILE-%MiscFileName%.ptd, FileInfo, File
+	IniWrite, %MiscFileName%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%TVItemName%\FILE-%MiscFileName%.ptd, FileInfo, Name
+	StringReplace, MiscFileDesc, MiscFileDesc, `n, |, All
+	IniWrite, %LinkDesc%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%TVItemName%\FILE-%LinkName%.ptd, FileInfo, Description
+}
+if SaveFiles = No
+{
+	IniWrite, %ImportedFile%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%TVItemName%\FILE-%MiscFileName%.ptd, FileInfo, File
+	IniWrite, %MiscFileName%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%TVItemName%\FILE-%MiscFileName%.ptd, FileInfo, Name
+	StringReplace, MiscFileDesc, MiscFileDesc, `n, |, All
+	IniWrite, %LinkDesc%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%TVItemName%\FILE-%MiscFileName%.ptd, FileInfo, Description
+}
+;// Adding Tags
+FullFileName = FILE-%MiscFileName%
+FileRead, Stags, %A_Temp%\ProgressTracker\stags.temp
+IniWrite, %Stags%, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%TVItemName%\FILE-%MiscFileName%.ptd, FileInfo, Tags
+Loop, Parse, Stags, |
+{
+	AddToTagDir(A_LoopField,TVItemName,FullFileName,TagFilePath,4)
+}
+;\\
+MsgBox,,Saved, Link Saved!
 return
 
 TagSearch:
@@ -1107,7 +1187,9 @@ if A_GuiEvent = DoubleClick
 	}
 	ifInString, MiscListBox, FILE
 	{
-		;// Placeholder
+		StringReplace, MiscListBox, MiscListBox, `:, -
+		IniRead, FileAddress, %A_MyDocuments%\ProgressTracker\ProgramData\%SavedProgramName%\Misc\FILE\%TVItemName%\%MiscListBox%.ptd, FileInfo, File
+		Run, %FileAddress%
 	}
 }
 return
@@ -1240,6 +1322,21 @@ LinkDescriptorGuiClose:
 	else
 	{
 		LinkDescriptorTrigger = 0
+		Gui, Destroy
+		return
+	}
+}
+
+FileDescriptorGuiClose:
+{
+	MsgBox 52, Warning, All data that has not been saved will be lost. `nAre you sure?
+	IfMsgBox No
+	{
+		return
+	}
+	else
+	{
+		FileDescriptorTrigger = 0
 		Gui, Destroy
 		return
 	}
