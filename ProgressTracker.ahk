@@ -3,6 +3,7 @@ Codename=ProgressTracker
 CurrentUser=%A_UserName% ;Placeholder for collaboration in the future
 Temp_File=0 ; Check to see if the current file is a temp file
 ImgSaveTrigger=0
+NoLastFileTrigger = 0
 SaveLocation=%A_MyDocuments%\ProgressTracker\ProgramData ; Default save location
 MyDocumentsDataPath=%A_MyDocuments%\ProgressTracker
 FormatTime, LocalTime,,ShortDate
@@ -135,7 +136,23 @@ SB_SetText("Upcoming Reminder:", 1)
 SB_SetText("Upcoming Deadline:", 2)
 Gui, Tab
 Gui, Show
-Goto LoadSaveFile ;Goes to LoadSaveFile so it has a file already open when the program starts
+if LastOpenProgram = ERROR
+{
+	NoLastFileTrigger = 1
+	Goto MenuFileNew ;Goes to MenuFileNew so it creates a new file
+	return
+}
+if LastOpenProgram =
+{
+	NoLastFileTrigger = 1
+	Goto MenuFileNew ;Goes to MenuFileNew so it creates a new file
+	return
+}
+else
+{
+	Goto LoadSaveFile ;Goes to LoadSaveFile so it has a file already open when the program starts
+	return
+}
 return
 
 MenuFileNew:
@@ -143,7 +160,14 @@ GuiControl,,ProgressBar, 0
 IniRead,LastOpenProgram, %A_MyDocuments%\ProgressTracker\ProgressTrackerSettings.ini, FileInfo, LastOpenProgram
 DisableAllGui()
 DisableAllMenus()
-MsgBox,52,Confirm,  All progress that has not been saved will be lost `, Are you sure?
+if NoLastFileTrigger = 0
+{
+	MsgBox,52,Confirm,  All progress that has not been saved will be lost`nAre you sure?
+}
+if NoLastFileTrigger = 1
+{
+	MsgBox,52,Confirm,  You are about to create a new file`nAre you sure?
+}
 IfMsgBox Yes
 {
 	InputBox, NewFileName, New File, Choose a name for the new file,,210,125
